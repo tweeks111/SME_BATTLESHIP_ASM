@@ -21,7 +21,7 @@ echo Target name:        "%~3.hex"
 :: Get the COM port number.
 for /f "usebackq" %%B in (`wmic path Win32_SerialPort Where "Caption LIKE '%%Genuino%%'" Get DeviceID ^| FINDSTR "COM"`) do set comport=%%B
 if [%comport%] == [] (
-	for /f "usebackq" %%B in (`wmic path Win32_SerialPort Where "Caption LIKE '%%rie%%'" Get DeviceID ^| FINDSTR "COM"`) do set comport=%%B
+	for /f "usebackq" %%B in (`wmic path Win32_SerialPort Where "Caption LIKE '%%Serial%%'" Get DeviceID ^| FINDSTR "COM"`) do set comport=%%B
 )
 echo COM port number:    %comport%
 echo.
