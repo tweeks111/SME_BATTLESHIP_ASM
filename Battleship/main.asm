@@ -88,10 +88,14 @@ init:
 	RCALL screen_fill
 
 	; Write the game's home screen
+	/*
 	draw_title 3
 	buzzer_sound Sound_Intro
 	RCALL anim_intro
-
+	*/
+	draw_left_board 1
+	draw_right_arrow 2
+	draw_right_board 3
 main:
 	RJMP main
 
