@@ -65,8 +65,8 @@ RJMP Timer0OverflowInterrupt
 .INCLUDE "Screen.inc"
 .INCLUDE "Keyboard.inc"
 .INCLUDE "Timer1Mux.inc"
-.INCLUDE "Animations.inc"
 .INCLUDE "Sleep.inc"
+.INCLUDE "Animations.inc"
 .INCLUDE "Buzzer.inc"
 
 
@@ -88,48 +88,11 @@ init:
 	RCALL screen_fill
 
 	; Write the game's home screen
-	RCALL write_battleship
+	draw_title 3
+	buzzer_sound Sound_Intro
+	RCALL anim_intro
 
 main:
-	; Let's play a sound
-	buzzer_sound Sound_Intro
-
-	sleep_ts 20
-
-	buzzer_sound Sound_Winner
-
-	sleep_ts 20
-
-	buzzer_sound Sound_Looser
-	
-	sleep_ts 50
-
 	RJMP main
-
-	
-write_go:
-
-	draw_rect 14, 2, 3, 12, 9
-	draw_rect 15, 3, 0, 10, 7
-	draw_char 16, 4, 3, _G
-	draw_char 20, 4, 3, _O
-	draw_char 24, 4, 3, _EXC
-
-	RET
-
-write_battleship:
-	draw_char 1, 4, 1, _B 
-	draw_char 5, 4, 2, _A
-	draw_char 9, 4, 3, _T
-	draw_char 13, 4, 1, _T
-	draw_char 17, 4, 2, _L
-	draw_char 21, 4, 3, _E
-	draw_char 25, 4, 1, _S
-	draw_char 29, 4, 2, _H
-	draw_char 33, 4, 3, _I
-	draw_char 37, 4, 3, _P
-	draw_line 0, 2, 3, 40
-	draw_line 0, 10, 3, 40
-	RET
 
 
