@@ -81,6 +81,9 @@
     <Compile Include="Screen.inc">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ScreenDrawings.inc">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Sleep.inc">
       <SubType>Code</SubType>
     </Compile>

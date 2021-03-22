@@ -125,50 +125,6 @@
 	RCALL screen_set_hline
 .endmacro
 
-.macro draw_title
-	draw_char 1, 4, @0, _B 
-	draw_char 5, 4, @0, _A
-	draw_char 9, 4, @0, _T
-	draw_char 13, 4, @0, _T
-	draw_char 17, 4, @0, _L
-	draw_char 21, 4, @0, _E
-	draw_char 25, 4, @0, _S
-	draw_char 29, 4, @0, _H
-	draw_char 33, 4, @0, _I
-	draw_char 37, 4, @0, _P
-	draw_line 0, 2, 3, 40
-	draw_line 0, 10, 3, 40
-.endmacro
-
-.macro draw_go
-	draw_rect 14, 2, 3, 12, 9
-	draw_rect 15, 3, 0, 10, 7
-	draw_char 16, 4, 3, _G
-	draw_char 20, 4, 3, _O
-	draw_char 24, 4, 3, _EXC
-.endmacro
-
-.macro draw_miss
-	draw_rect 10, 2, @0, 1 , 9
-	draw_rect 28, 2, @0, 1 , 9
-	draw_line 10, 2, @0, 19
-	draw_line 10, 10, @0, 19
-	draw_char 12, 4, @0, _M
-	draw_char 16, 4, @0, _I
-	draw_char 20, 4, @0, _S
-	draw_char 24, 4, @0, _S
-.endmacro
-
-.macro draw_hit
-	draw_rect 13, 2, @0, 1 , 9
-	draw_rect 27, 2, @0, 1 , 9
-	draw_line 13, 2, @0, 14
-	draw_line 13, 10, @0, 14
-	draw_char 15, 4, @0, _H
-	draw_char 19, 4, @0, _I
-	draw_char 23, 4, @0, _T
-.endmacro
-
 
 screen_init:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -477,8 +433,12 @@ screen_set_rect:
 	; R12: LED brightness value (0 = Off; 1 = 33%, 2 = 67%, 3 = 100%)
 	; R13: Rectangle width (must be at least 1)
 	; R14: Rectangle height (must be at least 1)
-	; NOTE: this function changes: *R11*, *R14*, R16, R17, R18, R19
+	; NOTE: this function changes: R16, R17, R18, R19, R20, R21
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	; Copy X position and height in R20 and R21
+	MOV R20, R11
+	MOV R21, R14
 
 	; Repeat drawing lines of the same width across the height
 	ssr_height_loop:
@@ -487,6 +447,11 @@ screen_set_rect:
 		INC R11				; Increment the Y position
 		DEC R14				; Decrement the remaining height
 		BRNE ssr_height_loop
+	
+	; Restore the X and height registers
+	MOV R11, R20
+	MOV R14, R21
+
 	RET
 
 

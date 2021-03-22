@@ -66,8 +66,9 @@ RJMP Timer0OverflowInterrupt
 .INCLUDE "Keyboard.inc"
 .INCLUDE "Timer1Mux.inc"
 .INCLUDE "Sleep.inc"
-.INCLUDE "Animations.inc"
 .INCLUDE "Buzzer.inc"
+.INCLUDE "ScreenDrawings.inc"
+.INCLUDE "Animations.inc"
 
 
 init:
