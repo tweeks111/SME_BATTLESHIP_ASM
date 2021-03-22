@@ -126,35 +126,6 @@
 .endmacro
 
 
-.macro draw_left_board
-	draw_rect 0, 0, @0, 1, 14
-	draw_rect 13, 0, @0, 1, 14
-	draw_line 1, 0, @0, 12
-	draw_line 1, 13, @0, 12
-.endmacro
-
-.macro draw_right_board
-	draw_rect 26, 0, @0, 1, 14
-	draw_rect 39, 0, @0, 1, 14
-	draw_line 27, 0, @0, 12
-	draw_line 27, 13, @0, 12
-.endmacro
-
-.macro draw_left_arrow
-	draw_line 19, 1, @0, 1
-	draw_line 18, 2, @0, 5
-	draw_line 17, 3, @0, 6
-	draw_line 18, 4, @0, 5
-	draw_line 19, 5, @0, 1
-.endmacro
-
-.macro draw_right_arrow
-	draw_line 20, 1, @0, 1
-	draw_line 17, 2, @0, 5
-	draw_line 17, 3, @0, 6
-	draw_line 17, 4, @0, 5
-	draw_line 20, 5, @0, 1
-.endmacro
 screen_init:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function initializes the Timer0 to a constant
