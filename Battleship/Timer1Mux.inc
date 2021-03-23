@@ -1,4 +1,4 @@
-﻿;
+;
 ; Timer1Mux.inc
 ;
 ; This file is part of the Battleship project.
@@ -7,7 +7,7 @@
 ; sub-routines: the Sleep process routine and the Animations
 ; process routine.
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors : Mathieu Philippart & Th�o Lepoutte
 ;
 
 #define TCNT1_INIT 40536	; 65536 - 25000 because we are working in overflow
@@ -55,6 +55,7 @@ Timer1OverflowInterrupt:
 	PUSH R25
 
 	RCALL SleepInterruptRoutine
+	RCALL SoundsInterruptRoutine
 	RCALL AnimationsInterruptRoutine
 	
 	; Restore status register from the stack	

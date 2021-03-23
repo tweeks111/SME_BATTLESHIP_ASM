@@ -1,12 +1,12 @@
-ï»¿;
+;
 ; CoreI2C.inc
 ;
 ; This file is part of the Battleship project.
 ;
 ; It contains all the functions needed to send/receive packets
-; between two boards using IÂ²C peripheral.
+; between two boards using I²C peripheral.
 ;
-; Authors : Mathieu Philippart & ThÃ©o Lepoutte
+; Authors : Mathieu Philippart & Théo Lepoutte
 ;
 
 #define I2C_START			0x08	// Start condition has been received
@@ -282,7 +282,7 @@ i2c_wait_int_flag:
 
 i2c_master_transmit_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function transmits a packet (5 bytes) in the IÂ²C bus.
+	; This function transmits a packet (5 bytes) in the I²C bus.
 	; The 5 bytes to send are taken from 5 registers: R[10;14].
 	; The exit status is written in R15 (0x00 if succes, 0xFF if error). 
 	; NOTE: this function modifies: R16, R17
@@ -373,7 +373,7 @@ i2c_master_transmit_packet:
 
 i2c_master_receive_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function reads a packet (5 bytes) from the IÂ²C bus.
+	; This function reads a packet (5 bytes) from the I²C bus.
 	; The 5 bytes read are stored into 5 registers: R[10;14].
 	; The exit status is written in R15 (0x00 if succes, 0xFF if error).
 	; NOTE: this function modifies: R16, R17
@@ -473,7 +473,7 @@ i2c_master_receive_packet:
 
 i2c_slave_transmit_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function transmits a packet (5 bytes) on the IÂ²C bus.
+	; This function transmits a packet (5 bytes) on the I²C bus.
 	; The 5 bytes to send are taken from 5 registers: R[10;14].
 	; The exit status is written in R15 (0x00 if succes, 0xFF if error).
 	; NOTE: this function modifies: R16, R17
@@ -556,7 +556,7 @@ i2c_slave_transmit_packet:
 
 i2c_slave_receive_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function receives a packet (5 bytes) from the IÂ²C bus.
+	; This function receives a packet (5 bytes) from the I²C bus.
 	; The 5 bytes read are stored into 5 registers: R[10;14].
 	; The exit status is written in R15 (0x00 if succes, 0xFF if error).
 	; NOTE: this function modifies: R16, R17

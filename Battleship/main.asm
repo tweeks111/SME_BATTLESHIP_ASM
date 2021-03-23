@@ -1,4 +1,4 @@
-﻿;
+;
 ; main.asm
 ;
 ; This file is part of the Battleship project.
@@ -6,7 +6,7 @@
 ; This is the main file. It includes all the component's files and 
 ; declare the ISRs for all interrupt addresses. 
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors : Mathieu Philippart & Th�o Lepoutte
 ;
 
 ; NOTE: R0 and R1 are used to store the result of some operations (e.g. MUL)
@@ -93,8 +93,8 @@ init:
 
 	; Write the game's home screen
 	draw_title 3
-	;buzzer_sound Sound_Intro_Long
-	;RCALL anim_intro
+	buzzer_sound_async Sound_Intro_Long
+	RCALL anim_intro
 	
 	;RCALL comm_master_discovery
 	;RCALL comm_slave_discovery

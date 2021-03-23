@@ -1,4 +1,4 @@
-﻿;
+;
 ; Buzzer.inc
 ;
 ; This file is part of the Battleship project.
@@ -6,7 +6,7 @@
 ; It contains all the functions needed to play tones and 
 ; sounds, and the sounds tables.
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors : Mathieu Philippart & Th�o Lepoutte
 ;
 
 ; Tones frequencies -> TCNT value for prescaler 256 (see Excel document)
@@ -83,6 +83,22 @@
 	RCALL buzzer_sound_reg
 .endmacro
 
+.macro buzzer_sound_async
+	; Place the Y-pointer to address 0x01D0 (Sound conters address in SRAM)
+	LDI YH,0x01
+	LDI YL,0xD0
+
+	; Set Duration counter to 1 (= get the next tone)
+	LDI R16, 1
+	ST Y+,R16
+	
+	; Write the sound table address in SRAM
+	LDI R16, high(@0 << 1)
+	ST Y+,R16
+	LDI R16, low(@0 << 1)
+	ST Y,R16
+.endmacro
+
 
 buzzer_init:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -105,6 +121,15 @@ buzzer_init:
 	; Configure prescaler
 	LDI R16, (1<<CS22)|(1<<CS21)
 	STS TCCR2B,R16			; Set prescaler to 64 (f_tmr = 16e6/64 = 250000 Hz)
+
+	; INITIAL SRAM DATA ;
+	; Place the Y-pointer to address 0x01D0 (Sound conters address in SRAM)
+	LDI YH,0x01
+	LDI YL,0xD0
+	
+	; Set Duration counter to 0 (= no sound to play)
+	CLR R16
+	ST Y,R16
 
 	RET
 	
@@ -140,6 +165,98 @@ Timer2OverflowInterrupt:
 	OUT SREG, R25
 
 	RETI
+
+	
+SoundsInterruptRoutine:
+	; This routine runs at 10 Hz
+	
+	; Store the X-pointer on the stack (because it is used by the screen)
+	PUSH XH
+	PUSH XL
+
+	; Place the X-pointer to address 0x01D0 (Sound conters address in SRAM)
+	LDI XH,0x01
+	LDI XL,0xD0
+	
+	; Get the Duration counter value
+	LD R25,X
+
+	; Check and skip if there is no sound to play
+	CPI R25,0
+	BREQ sir_no_sound_to_play
+
+	; Check and skip if the tone doesn't need to change
+	CPI R25,1
+	BRNE sir_dec_duration
+
+	; Store the Z-pointer on the stack (because we are in an interrupt)
+	PUSH ZH
+	PUSH ZL
+	
+	; Get the Z-pointer position from the SRAM (current sound reading position)
+	LD R25,X+					; Dummy read to increment X
+	LD R25,X+
+	MOV ZH,R25
+	LD R25,X
+	MOV ZL,R25
+
+	; Get the next tone and copy the frequency value in R8 (Timer2 counter)
+	LPM R25,Z+
+	MOV R8, R25
+	STS TCNT2,R25				; Apply to Timer2
+	
+	; Place the X-pointer to the start of the sound counter address
+	LDI XH,0x01
+	LDI XL,0xD0
+
+	; Get duration of next tone
+	LPM R25,Z+
+	
+	; Save the sound status in SRAM
+	ST X+,R25
+	ST X+,ZH
+	ST X+,ZL
+
+	; Restore the Z-pointer from the stack
+	POP ZL
+	POP ZH
+
+	; If the next duration is 0 -> end of the sound
+	CPI R25,0
+	BREQ sir_no_sound_to_play
+
+	; If the next tone is a silence -> disable buzzer for the duration
+	MOV R25, R8
+	CPI R25, _SHUSH
+	BREQ sir_no_sound_to_play
+
+	; Enable the Timer2
+	LDI R25,0x01
+	STS TIMSK2,R25				; Enable Overflow interrupt of Timer2
+	
+	RJMP sir_end_routine
+
+	sir_dec_duration:
+	; Decrement the duration
+	DEC R25
+	ST X, R25
+
+	RJMP sir_end_routine
+
+	sir_no_sound_to_play:
+	; Disable the Timer2
+	LDI R25,0x00
+	STS TIMSK2,R25				; Disable Overflow interrupt of Timer2
+
+	; Ensure the buzzer if connected to Gnd
+	CBI PORTB,1
+
+	sir_end_routine:
+	; Restore the X-pointer from the stack
+	POP XL
+	POP XH
+
+	RET
 
 buzzer_tone_reg:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

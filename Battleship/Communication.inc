@@ -1,12 +1,12 @@
-ï»¿;
+;
 ; Communication.inc
 ;
 ; This file is part of the Battleship project.
 ;
 ; It contains all the functions needed communicate two boards using the 
-; IÂ²C protocol (detailed in the external document: IÂ²C communication protocol).
+; I²C protocol (detailed in the external document: I²C communication protocol).
 ;
-; Authors : Mathieu Philippart & ThÃ©o Lepoutte
+; Authors : Mathieu Philippart & Théo Lepoutte
 ;
 
 
