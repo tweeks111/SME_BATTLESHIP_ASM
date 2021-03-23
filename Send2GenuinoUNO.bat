@@ -23,6 +23,9 @@ for /f "usebackq" %%B in (`wmic path Win32_SerialPort Where "Caption LIKE '%%Gen
 if [%comport%] == [] (
 	for /f "usebackq" %%B in (`wmic path Win32_SerialPort Where "Caption LIKE '%%Serial%%'" Get DeviceID ^| FINDSTR "COM"`) do set comport=%%B
 )
+if [%comport%] == [] (
+	for /f "usebackq" %%B in (`wmic path Win32_SerialPort Where "Caption LIKE '%%Arduino%%'" Get DeviceID ^| FINDSTR "COM"`) do set comport=%%B
+)
 echo COM port number:    %comport%
 echo.
 

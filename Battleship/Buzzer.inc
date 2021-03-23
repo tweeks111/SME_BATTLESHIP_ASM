@@ -1,4 +1,4 @@
-;
+﻿;
 ; Buzzer.inc
 ;
 ; This file is part of the Battleship project.
@@ -6,7 +6,7 @@
 ; It contains all the functions needed to play tones and 
 ; sounds, and the sounds tables.
 ;
-; Authors : Mathieu Philippart & Th�o Lepoutte
+; Authors : Mathieu Philippart & Théo Lepoutte
 ;
 
 ; Tones frequencies -> TCNT value for prescaler 256 (see Excel document)
@@ -229,10 +229,15 @@ Sound_Test:
 		_RE_3, 2,  _MI_3, 2,  _FA_3, 2,  _SHUSH, 2,							\
 		_SOL_3, 2, _SHUSH, 2,												\
 		_DO_3, 2,  _SHUSH, 2, 0, 0
-
+		
 Sound_Intro:
 	; Intro sound
 	.db _SOL_3, 2, _SHUSH, 1, _SOL_3, 1, _DO_4, 5, _SHUSH, 1, _DO_3, 1, _DO_3, 1, _DO_3, 2, 0, 0
+
+Sound_Intro_Long:
+	; Long Intro sound
+	.db _SOL_3, 2, _SHUSH, 1, _SOL_3, 1, _DO_4, 5, _SHUSH, 1, _SOL_3, 2,  _RE_4, 3,  _SHUSH, 1,						\
+		_DO_4, 2,  _SHUSH, 1, _SI_3, 1,  _DO_4, 4, _SHUSH, 1,  _DO_3, 2,  _SHUSH, 1, _DO_3, 1, _DO_3, 2, 0, 0
 
 Sound_Winner:
 	; Winner sound

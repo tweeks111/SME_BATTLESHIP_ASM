@@ -1,4 +1,4 @@
-;
+﻿;
 ; main.asm
 ;
 ; This file is part of the Battleship project.
@@ -6,7 +6,7 @@
 ; This is the main file. It includes all the component's files and 
 ; declare the ISRs for all interrupt addresses. 
 ;
-; Authors : Mathieu Philippart & Th�o Lepoutte
+; Authors : Mathieu Philippart & Théo Lepoutte
 ;
 
 ; NOTE: R0 and R1 are used to store the result of some operations (e.g. MUL)
@@ -69,6 +69,8 @@ RJMP Timer0OverflowInterrupt
 .INCLUDE "Buzzer.inc"
 .INCLUDE "ScreenDrawings.inc"
 .INCLUDE "Animations.inc"
+.INCLUDE "CoreI2C.inc"
+.INCLUDE "Communication.inc"
 
 
 init:
@@ -80,6 +82,7 @@ init:
     RCALL screen_init
 	RCALL timer1_mux_init
 	RCALL buzzer_init
+	RCALL i2c_init
 	
 	; This enables ALL previously configured interrupts
 	SEI					; Enable Global Interrupt Flag
@@ -89,15 +92,23 @@ init:
 	RCALL screen_fill
 
 	; Write the game's home screen
-	/*
 	draw_title 3
-	buzzer_sound Sound_Intro
-	RCALL anim_intro
-	*/
+	;buzzer_sound Sound_Intro_Long
+	;RCALL anim_intro
+	
+	;RCALL comm_master_discovery
+	;RCALL comm_slave_discovery
+
+	CLR R10
+	RCALL screen_fill
+
 	draw_left_board 1
 	draw_right_arrow 2
 	draw_right_board 3
+
+
 main:
+
 	RJMP main
 
 

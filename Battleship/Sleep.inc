@@ -1,11 +1,11 @@
-;
+﻿;
 ; Sleep.inc
 ;
 ; This file is part of the Battleship project.
 ;
 ; It contains all the functions needed to generate a sleep (C-like) function.
 ;
-; Authors : Mathieu Philippart & Th�o Lepoutte
+; Authors : Mathieu Philippart & Théo Lepoutte
 ;
 
 .macro sleep_ts

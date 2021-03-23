@@ -1,4 +1,4 @@
-;
+﻿;
 ; Screen.inc
 ;
 ; This file is part of the Battleship project.
@@ -6,7 +6,7 @@
 ; It contains all the functions needed to display dots, lines,
 ; recangles and characters on the screen.
 ;
-; Authors : Mathieu Philippart & Th�o Lepoutte
+; Authors : Mathieu Philippart & Théo Lepoutte
 ;
 
 // Characters definitions

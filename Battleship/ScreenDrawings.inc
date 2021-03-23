@@ -1,11 +1,11 @@
-;
+﻿;
 ; ScreenDrawings.inc
 ;
 ; This file is part of the Battleship project.
 ;
 ; It contains marcos describing some drawings on the screen.
 ;
-; Authors : Mathieu Philippart & Th�o Lepoutte
+; Authors : Mathieu Philippart & Théo Lepoutte
 ;
 
 .macro draw_title
