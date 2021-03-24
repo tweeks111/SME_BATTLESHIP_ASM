@@ -50,7 +50,12 @@
 
 #define _SHUSH	255		; Silence
 
+#define SOUND_COUNTER_ADDR 0x01C0
 
+
+/*
+ * The two next macros are commented since we use asynchronous sound playback
+ *
 .macro buzzer_tone
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This macro plays a frequency given in argument 0 with
@@ -82,11 +87,12 @@
 
 	RCALL buzzer_sound_reg
 .endmacro
+*/
 
 .macro buzzer_sound_async
-	; Place the Y-pointer to address 0x01D0 (Sound conters address in SRAM)
-	LDI YH,0x01
-	LDI YL,0xD0
+	; Place the Y-pointer to address SOUND_COUNTER_ADDR (Sound conters address in SRAM)
+	LDI YH,high(SOUND_COUNTER_ADDR)
+	LDI YL,low(SOUND_COUNTER_ADDR)
 
 	; Set Duration counter to 1 (= get the next tone)
 	LDI R16, 1
@@ -123,9 +129,9 @@ buzzer_init:
 	STS TCCR2B,R16			; Set prescaler to 64 (f_tmr = 16e6/64 = 250000 Hz)
 
 	; INITIAL SRAM DATA ;
-	; Place the Y-pointer to address 0x01D0 (Sound conters address in SRAM)
-	LDI YH,0x01
-	LDI YL,0xD0
+	; Place the Y-pointer to address SOUND_COUNTER_ADDR (Sound conters address in SRAM)
+	LDI YH,high(SOUND_COUNTER_ADDR)
+	LDI YL,low(SOUND_COUNTER_ADDR)
 	
 	; Set Duration counter to 0 (= no sound to play)
 	CLR R16
@@ -174,9 +180,9 @@ SoundsInterruptRoutine:
 	PUSH XH
 	PUSH XL
 
-	; Place the X-pointer to address 0x01D0 (Sound conters address in SRAM)
-	LDI XH,0x01
-	LDI XL,0xD0
+	; Place the X-pointer to address SOUND_COUNTER_ADDR (Sound conters address in SRAM)
+	LDI XH,high(SOUND_COUNTER_ADDR)
+	LDI XL,low(SOUND_COUNTER_ADDR)
 	
 	; Get the Duration counter value
 	LD R25,X
@@ -206,8 +212,8 @@ SoundsInterruptRoutine:
 	STS TCNT2,R25				; Apply to Timer2
 	
 	; Place the X-pointer to the start of the sound counter address
-	LDI XH,0x01
-	LDI XL,0xD0
+	LDI XH,high(SOUND_COUNTER_ADDR)
+	LDI XL,low(SOUND_COUNTER_ADDR)
 
 	; Get duration of next tone
 	LPM R25,Z+
