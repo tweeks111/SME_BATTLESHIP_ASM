@@ -6,7 +6,7 @@
 ; This is the main file. It includes all the component's files and 
 ; declare the ISRs for all interrupt addresses. 
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors : Mathieu Philippart & Thï¿½o Lepoutte
 ;
 
 ; NOTE: R0 and R1 are used to store the result of some operations (e.g. MUL)
@@ -70,6 +70,8 @@ RJMP Timer0OverflowInterrupt
 .INCLUDE "Sleep.inc"
 .INCLUDE "Buzzer.inc"
 .INCLUDE "Animations.inc"
+.INCLUDE "CoreI2C.inc"
+.INCLUDE "Communication.inc"
 
 
 init:
@@ -81,6 +83,7 @@ init:
     RCALL screen_init
 	RCALL timer1_mux_init
 	RCALL buzzer_init
+	RCALL i2c_init
 	
 	; This enables ALL previously configured interrupts
 	SEI					; Enable Global Interrupt Flag
@@ -90,9 +93,8 @@ init:
 	RCALL screen_fill
 
 	; Write the game's home screen
-	/*
 	draw_title 3
-	buzzer_sound Sound_Intro
+	buzzer_sound_async Sound_Intro_Long
 	RCALL anim_intro
 	*/
 	draw_left_board 2
@@ -109,6 +111,8 @@ init:
 	ST Y, R16
 	RCALL draw_cursor
 
+	;RCALL comm_master_discovery
+	;RCALL comm_slave_discovery
 main:
 	RCALL main_keyboard
 	RJMP main

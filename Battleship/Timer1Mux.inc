@@ -55,6 +55,7 @@ Timer1OverflowInterrupt:
 	PUSH R25
 
 	RCALL SleepInterruptRoutine
+	RCALL SoundsInterruptRoutine
 	RCALL AnimationsInterruptRoutine
 	
 	; Restore status register from the stack	

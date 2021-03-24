@@ -6,7 +6,7 @@
 ; It contains all the functions needed to display dots, lines,
 ; recangles and characters on the screen.
 ;
-; Authors : Mathieu Philippart & Thï¿½o Lepoutte
+; Authors : Mathieu Philippart & Théo Lepoutte
 ;
 
 // Characters definitions
@@ -165,6 +165,11 @@ screen_init:
 	CLR R3				; Screen PWM counter
 	CLR R5				; Screen row byte counter
 	CLR R6				; Screen Interrupt Row Selector (must be 0 initially)
+
+	; INITIAL SRAM DATA ;
+	; Clear the screen
+	CLR R10
+	RCALL screen_fill
 
 	RET
 	
