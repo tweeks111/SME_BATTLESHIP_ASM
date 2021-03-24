@@ -6,7 +6,7 @@
 ; This is the main file. It includes all the component's files and 
 ; declare the ISRs for all interrupt addresses. 
 ;
-; Authors : Mathieu Philippart & Th�o Lepoutte
+; Authors : Mathieu Philippart & Théo Lepoutte
 ;
 
 ; NOTE: R0 and R1 are used to store the result of some operations (e.g. MUL)
@@ -96,13 +96,18 @@ init:
 	draw_title 3
 	buzzer_sound_async Sound_Intro_Long
 	RCALL anim_intro
-	RCALL draw_boards
+
+	RCALL player_select_menu
+
+	;draw_left_board 2
+	;draw_right_board 2
 
 	//Entering state1 
-	LDI YH,0x01
-	LDI YL,0x8D
 	LDI R16, 0x01	; State byte
-	ST Y+, R16
+	MOV R9, R16
+
+	LDI YH,0x01
+	LDI YL,0x8E
 	LDI R16, 0x03	; X cursor
 	ST Y+, R16
 	LDI R16, 0x03	; Y cursor
@@ -111,8 +116,17 @@ init:
 
 	;RCALL comm_master_discovery
 	;RCALL comm_slave_discovery
+	
 main:
 	RCALL main_keyboard
+
 	RJMP main
 
 
+player_select_menu:
+	RCALL screen_clear
+	draw_word 7, 1, 3, WordPlayer1
+	draw_word 7, 8, 3, WordPlayer2
+
+	; TODO: set the game state to something and wait choice from keyboard...
+	RET

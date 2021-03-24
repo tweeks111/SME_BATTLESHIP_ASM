@@ -1,9 +1,12 @@
-/*
- * Game.inc
- *
- *  Created: 22-03-21 21:28:08
- *   Author: theol
- */ 
+;
+; Game.inc
+;
+; This file is part of the Battleship project.
+;
+; This file contains the game management functions.
+;
+; Authors : Mathieu Philippart & Th�o Lepoutte
+;
 
 
 move_up:
