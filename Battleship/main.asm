@@ -54,7 +54,7 @@
 
 .INCLUDE "m328pdef.inc"
 .ORG 0x0000
-RJMP init
+JMP init
 .ORG 0x0012
 RJMP Timer2OverflowInterrupt
 .ORG 0x001A
@@ -62,17 +62,17 @@ RJMP Timer1OverflowInterrupt
 .ORG 0x0020
 RJMP Timer0OverflowInterrupt
 
+
+.INCLUDE "Timer1Mux.inc"
+.INCLUDE "Sleep.inc"
+.INCLUDE "CoreI2C.inc"
+.INCLUDE "Communication.inc"
+.INCLUDE "Buzzer.inc"
 .INCLUDE "Screen.inc"
 .INCLUDE "ScreenDrawings.inc"
 .INCLUDE "Game.inc"
 .INCLUDE "Keyboard.inc"
-.INCLUDE "Timer1Mux.inc"
-.INCLUDE "Sleep.inc"
-.INCLUDE "Buzzer.inc"
 .INCLUDE "Animations.inc"
-.INCLUDE "CoreI2C.inc"
-.INCLUDE "Communication.inc"
-
 
 init:
 	; Configure output pin PC3 (LED BOTTOM)
@@ -80,10 +80,10 @@ init:
 	SBI PORTC,3			; Output Vcc => Off
 
 	; Initialize components
-    RCALL screen_init
-	RCALL timer1_mux_init
-	RCALL buzzer_init
-	RCALL i2c_init
+    CALL screen_init
+	CALL timer1_mux_init
+	CALL buzzer_init
+	CALL i2c_init
 	
 	; This enables ALL previously configured interrupts
 	SEI					; Enable Global Interrupt Flag
@@ -96,9 +96,7 @@ init:
 	draw_title 3
 	buzzer_sound_async Sound_Intro_Long
 	RCALL anim_intro
-	*/
-	draw_left_board 2
-	draw_right_board 2
+	RCALL draw_boards
 
 	//Entering state1 
 	LDI YH,0x01
