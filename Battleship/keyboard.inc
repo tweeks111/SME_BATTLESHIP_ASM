@@ -190,41 +190,27 @@ Btn0:
 Btn1:
 	RET
 Btn2:
-	LDI YH,0x01
-	LDI YL,0x8D
-	LD R21, Y
-	SBRC R21, 0
-		RCALL move_down
+	RCALL move_down
 	RET
 Btn3:
 	RET
 Btn4:
-  	LDI YH,0x01
-	LDI YL,0x8D
-	LD R21, Y
-	SBRC R21, 0
-		RCALL move_left
+	RCALL move_left
 	RET
 Btn5:
 	RCALL place_ship
 	RET
 Btn6:
-	LDI YH,0x01
-	LDI YL,0x8D
-	LD R21, Y
-	SBRC R21, 0
-		RCALL move_right
+	RCALL move_right
 	RET
 Btn7:
+	RCALL rotate_ship
 	RET
 Btn8:
- 	LDI YH,0x01
-	LDI YL,0x8D
-	LD R21, Y
-	SBRC R21, 0
-		RCALL move_up
+	RCALL move_up
 	RET
 Btn9:
+	RCALL rotate_ship
 	RET
 BtnA:
 	RET
