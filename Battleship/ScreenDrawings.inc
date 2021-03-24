@@ -81,3 +81,25 @@
 	draw_line 17, 4, @0, 5
 	draw_line 20, 5, @0, 1
 .endmacro
+
+draw_boards:
+	draw_left_board 2
+	draw_right_board 2
+	RET
+
+draw_cursor:
+	LDI YH, 0x01
+	LDI YL, 0x8E
+	LD R16, Y+
+	LD R17, Y
+	LDI R18, 2		// Board Offset
+	ADD R16, R18
+	ADD R17, R18
+	MOV R10, R16
+	MOV R11, R17
+	LDI R16, 2
+	MOV R12, R16
+	LDI R16, 1
+	MOV R13, R16
+	RCALL screen_set_hline
+	RET

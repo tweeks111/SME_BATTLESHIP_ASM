@@ -72,6 +72,9 @@
     <Compile Include="Buzzer.inc">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Game.inc">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Keyboard.inc">
       <SubType>Code</SubType>
     </Compile>

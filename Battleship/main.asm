@@ -63,11 +63,12 @@ RJMP Timer1OverflowInterrupt
 RJMP Timer0OverflowInterrupt
 
 .INCLUDE "Screen.inc"
+.INCLUDE "ScreenDrawings.inc"
+.INCLUDE "Game.inc"
 .INCLUDE "Keyboard.inc"
 .INCLUDE "Timer1Mux.inc"
 .INCLUDE "Sleep.inc"
 .INCLUDE "Buzzer.inc"
-.INCLUDE "ScreenDrawings.inc"
 .INCLUDE "Animations.inc"
 
 
@@ -94,10 +95,22 @@ init:
 	buzzer_sound Sound_Intro
 	RCALL anim_intro
 	*/
-	draw_left_board 1
-	draw_right_arrow 2
-	draw_right_board 3
+	draw_left_board 2
+	draw_right_board 2
+
+	//Entering state1 
+	LDI YH,0x01
+	LDI YL,0x8D
+	LDI R16, 0x01	; State byte
+	ST Y+, R16
+	LDI R16, 0x03	; X cursor
+	ST Y+, R16
+	LDI R16, 0x03	; Y cursor
+	ST Y, R16
+	RCALL draw_cursor
+
 main:
+	RCALL main_keyboard
 	RJMP main
 
 

@@ -13,8 +13,11 @@
 main_keyboard:
 	; 2-step method
 	step1:
-		LDI R16, 0x00	; Columns register
+		LDI R23, 0x00	; Columns register
 		LDI R18, 0x00	; Temp register
+		LDI YH, 0x02
+		LDI YL, 0x00
+		LD R16, Y
 		; Row -> LOW
 		CBI PORTD, 4
 		CBI PORTD, 5
@@ -48,32 +51,37 @@ main_keyboard:
 		SBIS PIND, 3 ; Skip if no button pressed on C0
 		RCALL Column0
 
-		LDI R18, 0x00
-		CP R16, R18
+		CPI R23, 0
 		BREQ NoButtonPressed
 		RJMP step2
 
 		Column0:
 			LDI R18, 0b00000001
-			ADD R16, R18
+			ADD R23, R18
 			RET
 		Column1: 
 			LDI R18, 0b00000010
-			ADD R16, R18
+			ADD R23, R18
 			RET
 		Column2:
 			LDI R18, 0b00000100
-			ADD R16, R18
+			ADD R23, R18
 			RET
 		Column3:
 			LDI R18, 0b00001000
-			ADD R16, R18
+			ADD R23, R18
 			RET
 
 	NoButtonPressed:
-		RJMP main_keyboard
+		CBR R16, 0b10000000
+		ST Y, R16
+		RET
 
 	step2:
+		SBRC R16, 7
+		RET
+		SBR R16, 0b10000000
+		ST Y, R16
 		; Columns -> LOW
 		CBI PORTD, 0
 		CBI PORTD, 1
@@ -111,120 +119,122 @@ main_keyboard:
 
 		Row0:
 			LDI R18, 0b00010000
-			ADD R16, R18
+			ADD R23, R18
 			RET
 		Row1: 
 			LDI R18, 0b00100000
-			ADD R16, R18
+			ADD R23, R18
 			RET
 		Row2:
 			LDI R18, 0b01000000
-			ADD R16, R18
+			ADD R23, R18
 			RET
 		Row3:
 			LDI R18, 0b10000000
-			ADD R16, R18
+			ADD R23, R18
 			RET
 
 	test:
 		CheckC0:
-			SBRS R16, 0
+			SBRS R23, 0
 			RJMP CheckC1
 			C0High:
-				SBRC R16, 4
+				SBRC R23, 4
 				RCALL Btn7
-				SBRC R16, 5
-				RCALL Btn8
-				SBRC R16, 6
-				RCALL Btn9
-				SBRC R16, 7
-				RCALL BtnF
+				SBRC R23, 5
+				RCALL Btn4
+				SBRC R23, 6
+				RCALL Btn1
+				SBRC R23, 7
+				RCALL BtnA
 		CheckC1:
-			SBRS R16, 1
+			SBRS R23, 1
 			RJMP CheckC2
 			C1High:
-				SBRC R16, 4
-				RCALL Btn4
-				SBRC R16, 5
+				SBRC R23, 4
+				RCALL Btn8
+				SBRC R23, 5
 				RCALL Btn5
-				SBRC R16, 6
-				RCALL Btn6
-				SBRC R16, 7
-				RCALL BtnE
+				SBRC R23, 6
+				RCALL Btn2
+				SBRC R23, 7
+				RCALL Btn0
 		CheckC2:
-			SBRS R16, 2
+			SBRS R23, 2
 			RJMP CheckC3
 			C2High:
-				SBRC R16, 4
-				RCALL Btn1
-				SBRC R16, 5
-				RCALL Btn2
-				SBRC R16, 6
+				SBRC R23, 4
+				RCALL Btn9
+				SBRC R23, 5
+				RCALL Btn6
+				SBRC R23, 6
 				RCALL Btn3
-				SBRC R16, 7
-				RCALL BtnD
-		CheckC3:
-			SBRS R16, 3
-			RJMP main_keyboard
-			C3High:
-				SBRC R16, 4
-				RCALL BtnA
-				SBRC R16, 5
-				RCALL Btn0
-				SBRC R16, 6
+				SBRC R23, 7
 				RCALL BtnB
-				SBRC R16, 7
+		CheckC3:
+			SBRS R23, 3
+			RET
+			C3High:
+				SBRC R23, 4
+				RCALL BtnF
+				SBRC R23, 5
+				RCALL BtnE
+				SBRC R23, 6
+				RCALL BtnD
+				SBRC R23, 7
 				RCALL BtnC
 		RET
 
-
-
 Btn0:
-	;RCALL BuzzerOn
 	RET
 Btn1:
-	;RCALL BuzzerOn
 	RET
 Btn2:
-	;RCALL BuzzerOn
+	LDI YH,0x01
+	LDI YL,0x8D
+	LD R21, Y
+	SBRC R21, 0
+		RCALL move_down
 	RET
 Btn3:
-	;RCALL BuzzerOn
 	RET
 Btn4:
-	;RCALL LEDPC2On
+  	LDI YH,0x01
+	LDI YL,0x8D
+	LD R21, Y
+	SBRC R21, 0
+		RCALL move_left
 	RET
 Btn5:
-	;RCALL BuzzerOn
+	RCALL place_ship
 	RET
 Btn6:
-	;RCALL BuzzerOn
+	LDI YH,0x01
+	LDI YL,0x8D
+	LD R21, Y
+	SBRC R21, 0
+		RCALL move_right
 	RET
 Btn7:
-	;RCALL LEDPC2On
-	;RCALL LEDPC3On
 	RET
 Btn8:
-	;RCALL LEDPC3On
+ 	LDI YH,0x01
+	LDI YL,0x8D
+	LD R21, Y
+	SBRC R21, 0
+		RCALL move_up
 	RET
 Btn9:
-	;RCALL BuzzerOn
 	RET
 BtnA:
-	;RCALL BuzzerOn
 	RET
 BtnB:
-	;RCALL BuzzerOn
 	RET
 BtnC:
-	;RCALL BuzzerOn
 	RET
 BtnD:
-	;RCALL BuzzerOn
 	RET
 BtnE:
-	;RCALL BuzzerOn
 	RET
 BtnF:
-	;RCALL BuzzerOn
 	RET

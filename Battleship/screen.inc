@@ -322,7 +322,12 @@ screen_fill:
 		BRNE sf_loop
 
 	RET
-	
+
+screen_clear:
+	LDI R16, 0
+	MOV R10, R16
+	RCALL screen_fill
+	RET
 
 screen_set_hline:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
