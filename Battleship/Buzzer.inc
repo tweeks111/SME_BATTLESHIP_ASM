@@ -258,6 +258,9 @@ SoundsInterruptRoutine:
 
 	RET
 
+/*
+ * The two next functions are not used anymore (we use asynchonous sound playing instead)
+ *
 buzzer_tone_reg:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function plays a frequency given in R10 with
@@ -329,7 +332,7 @@ buzzer_sound_reg:
 
 	bsr_sound_end:
 	RET
-
+*/
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; SOUND TABLES

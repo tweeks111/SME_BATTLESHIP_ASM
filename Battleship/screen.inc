@@ -38,6 +38,10 @@
 #define _Z 35
 #define _EXC 36
 #define _INT 37
+#define _SPACE 38
+
+#define _SMALL_SPACE 0xF0
+#define _WORD_END 0xFF
 
 ; The frequency of 56kHz for Timer0 results in a whole screen refreshing rate of 500Hz.
 ; When a pixel has a value of 1 (lowest PWM value), it is displayed at 100Hz.
@@ -74,7 +78,7 @@
 	; This macro draws a rectangle on the screen at position
 	; given in arg 0 (X) and 1 (Y). The rectangle brightness
 	; is given arg 2 and its size in arg 3 (W) and 4 (H).
-	; NOTE: this macro modifies: R16, R17, R18, R19
+	; NOTE: this macro modifies: R16, R17, R18, R19, R20, R21
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	LDI R16, @0		; X
 	MOV R10, R16	
@@ -125,6 +129,29 @@
 	RCALL screen_set_hline
 .endmacro
 
+.macro draw_word
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This macro draws a word (multiple characters) from the
+	; program memory on the screen.
+	; Arguments 0 and 1 are the positions (X,Y), argument 2
+	; is the brightness and argument 3 is the address of the
+	; word in program memory.
+	; NOTE: this macro modifies the register R16.
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	; Set the Z-pointer to the word address
+	LDI ZH, high(@3 << 1)
+	LDI ZL, low(@3 << 1)
+
+	LDI R16, @0
+	MOV R10,R16
+	LDI R16, @1
+	MOV R11,R16
+	LDI R16, @2
+	MOV R12,R16
+
+	RCALL screen_set_word
+.endmacro
 
 screen_init:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -328,11 +355,16 @@ screen_fill:
 
 	RET
 
+
 screen_clear:
-	LDI R16, 0
-	MOV R10, R16
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function clears the whole screen
+	; NOTE: this function changes: R16
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	CLR R10
 	RCALL screen_fill
 	RET
+
 
 screen_set_hline:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -567,11 +599,61 @@ screen_set_char:
 		BRNE swc_draw			; Branch until the 5 rows of the character are written
 	RET
 
+screen_set_word:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; Write a Word (multiple characters) on the screen (SRAM)
+	; R10 : Starting X position
+	; R11 : Starting Y position
+	; R12 : LED brightness value (0 = Off; 1 = 33%, 2 = 67%, 3 = 100%)
+	; Note : This function changes: *R10*, R16, R17, R18, R19, R20, R21.
+	;		 The Z-pointer must be previoulsy placed on the word address.
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	ssw_next_char:
+	; Get the next character index from program memory
+	LPM R13, Z+
+
+	; Check if word index is _WORD_END
+	LDI R16, _WORD_END
+	CP R13, R16
+	BREQ ssw_word_end
+	
+	; Check if word index is _SMALL_SPACE
+	LDI R16, _SMALL_SPACE
+	CP R13, R16
+	BRNE ssw_write_word
+		; Skip two pixels column (increment X position)
+		INC R10
+		INC R10
+		RJMP ssw_next_char		; Write next char
+
+	ssw_write_word:
+	; Store the Z-pointer in the stack
+	PUSH ZH
+	PUSH ZL
+
+	; Write this char on the screen
+	RCALL screen_set_char
+
+	; Restore the Z-pointer from the stack
+	POP ZL
+	POP ZH
+
+	; Increment the X position for the next char
+	LDI R16, 4
+	ADD R10, R16
+
+	; Write the next char
+	RJMP ssw_next_char
+
+	ssw_word_end:
+	RET
+
 
 ; Characters table (6 bytes per character)
 CharTable:
 	.db 0b11100000, 0b10100000, 0b10100000, 0b10100000, 0b11100000, 0b00000000 ;0
-	.db 0b00100000, 0b00100000, 0b00100000, 0b00100000, 0b00100000, 0b00000000 ;1
+	.db 0b01000000, 0b01000000, 0b01000000, 0b01000000, 0b01000000, 0b00000000 ;1
 	.db 0b11100000, 0b00100000, 0b11100000, 0b10000000, 0b11100000, 0b00000000 ;2
 	.db 0b11100000, 0b00100000, 0b11100000, 0b00100000, 0b11100000, 0b00000000 ;3
 	.db 0b10100000, 0b10100000, 0b11100000, 0b00100000, 0b00100000, 0b00000000 ;4
@@ -610,3 +692,24 @@ CharTable:
 
 	.db 0b01000000, 0b01000000, 0b01000000, 0b00000000, 0b01000000, 0b00000000 ;!
 	.db 0b01100000, 0b00100000, 0b01000000, 0b00000000, 0b01000000, 0b00000000 ;?
+
+	.db 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000 ; White space
+	
+
+WordPlayer1:
+	.db _P, _L, _A, _Y, _E, _R, _SMALL_SPACE, 1, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
+	
+WordPlayer2:
+	.db _P, _L, _A, _Y, _E, _R, _SMALL_SPACE, 2, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
+	
+WordBattleship:
+	.db _B, _A, _T, _T, _L, _E, _S, _H, _I, _P, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
+	
+WordHit:
+	.db _H, _I, _T, _WORD_END
+	
+WordMiss:
+	.db _M, _I, _S, _S, _WORD_END, 0
+
+WordGo:
+	.db _G, _O, _EXC, _WORD_END
