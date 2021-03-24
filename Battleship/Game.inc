@@ -25,27 +25,27 @@ move_up:
 		
 	move_up_ship0:
 		LDI R22, 5	; Length
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_up_v_ship
 		RJMP move_up_h_ship
 	move_up_ship1:
 		LDI R22, 4
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_up_v_ship
 		RJMP move_up_h_ship
 	move_up_ship2:
 		LDI R22, 3
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_up_v_ship
 		RJMP move_up_h_ship
 	move_up_ship3:
 		LDI R22, 3
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_up_v_ship
 		RJMP move_up_h_ship
 	move_up_ship4:
 		LDI R22, 2
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_up_v_ship
 		RJMP move_up_h_ship
 
@@ -114,27 +114,27 @@ move_down:
 		
 	move_down_ship0:
 		LDI R22, 5	; Length
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_down_v_ship
 		RJMP move_down_h_ship
 	move_down_ship1:
 		LDI R22, 4
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_down_v_ship
 		RJMP move_down_h_ship
 	move_down_ship2:
 		LDI R22, 3
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_down_v_ship
 		RJMP move_down_h_ship
 	move_down_ship3:
 		LDI R22, 3
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_down_v_ship
 		RJMP move_down_h_ship
 	move_down_ship4:
 		LDI R22, 2
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_down_v_ship
 		RJMP move_down_h_ship
 
@@ -205,27 +205,27 @@ move_left:
 		
 	move_left_ship0:
 		LDI R22, 5	; Length
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_left_v_ship
 		RJMP move_left_h_ship
 	move_left_ship1:
 		LDI R22, 4
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_left_v_ship
 		RJMP move_left_h_ship
 	move_left_ship2:
 		LDI R22, 3
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_left_v_ship
 		RJMP move_left_h_ship
 	move_left_ship3:
 		LDI R22, 3
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_left_v_ship
 		RJMP move_left_h_ship
 	move_left_ship4:
 		LDI R22, 2
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_left_v_ship
 		RJMP move_left_h_ship
 
@@ -293,27 +293,27 @@ move_right:
 		
 	move_right_ship0:
 		LDI R22, 5	; Length
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_right_v_ship
 		RJMP move_right_h_ship
 	move_right_ship1:
 		LDI R22, 4
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_right_v_ship
 		RJMP move_right_h_ship
 	move_right_ship2:
 		LDI R22, 3
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_right_v_ship
 		RJMP move_right_h_ship
 	move_right_ship3:
 		LDI R22, 3
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_right_v_ship
 		RJMP move_right_h_ship
 	move_right_ship4:
 		LDI R22, 2
-		SBRC R21, 6
+		SBRC R21, 7
 			RJMP move_right_v_ship
 		RJMP move_right_h_ship
 
@@ -368,13 +368,13 @@ rotate_ship:
 	LDI YH,0x01
 	LDI YL,0x8D
 	LD R16, Y
-	SBRC R16, 6
+	SBRC R16, 7
 		RJMP set_horizontal
 	set_vertical:
-		SBR R16, 0b01000000
+		SBR R16, 0b10000000
 		RJMP end_rotate_ship
 	set_horizontal:
-		CBR R16, 0b01000000
+		CBR R16, 0b10000000
 	end_rotate_ship:
 		ST Y, R16
 		RET
@@ -424,13 +424,12 @@ place_ship:
 		ST Y+, R22
 		ST Y+, R23
 		LDI R16, 0
-		SBRC R21, 6
+		SBRC R21, 7
 			INC R16
 		ST Y, R16
 
 	end_place_ship:
 		LSL R21
-		SBR R21, 0b10000000
 		LDI YH,0x01
 		LDI YL,0x8D
 		ST Y,R21

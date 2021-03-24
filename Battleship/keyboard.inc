@@ -15,9 +15,7 @@ main_keyboard:
 	step1:
 		LDI R23, 0x00	; Columns register
 		LDI R18, 0x00	; Temp register
-		LDI YH, 0x02
-		LDI YL, 0x00
-		LD R16, Y
+
 		; Row -> LOW
 		CBI PORTD, 4
 		CBI PORTD, 5
@@ -73,15 +71,9 @@ main_keyboard:
 			RET
 
 	NoButtonPressed:
-		CBR R16, 0b10000000
-		ST Y, R16
-		RET
+		RJMP end_main_keyboard
 
 	step2:
-		SBRC R16, 7
-		RET
-		SBR R16, 0b10000000
-		ST Y, R16
 		; Columns -> LOW
 		CBI PORTD, 0
 		CBI PORTD, 1
@@ -173,7 +165,7 @@ main_keyboard:
 				RCALL BtnB
 		CheckC3:
 			SBRS R23, 3
-			RET
+			RJMP end_main_keyboard
 			C3High:
 				SBRC R23, 4
 				RCALL BtnF
@@ -183,14 +175,17 @@ main_keyboard:
 				RCALL BtnD
 				SBRC R23, 7
 				RCALL BtnC
-		RET
+
+		end_main_keyboard:
+			sleep_ts 1
+			RET
 
 Btn0:
 	RET
 Btn1:
 	RET
 Btn2:
-	RCALL move_down
+	
 	RET
 Btn3:
 	RET
@@ -198,7 +193,7 @@ Btn4:
 	RCALL move_left
 	RET
 Btn5:
-	RCALL place_ship
+	RCALL move_down
 	RET
 Btn6:
 	RCALL move_right
@@ -210,7 +205,8 @@ Btn8:
 	RCALL move_up
 	RET
 Btn9:
-	RCALL rotate_ship
+	RCALL place_ship
+	sleep_ts 5
 	RET
 BtnA:
 	RET
