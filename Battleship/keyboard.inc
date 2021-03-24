@@ -5,7 +5,7 @@
 ;
 ; This file contains all the functions needed to use the keyboard. 
 ;
-; Authors : Mathieu Philippart & Thï¿½o Lepoutte
+; Authors : Mathieu Philippart & Théo Lepoutte
 ;
 
 #define KEYBOARD_STATE_ADDR 0x0190
@@ -25,7 +25,7 @@ keyboard_init:
 
 	RET
 
-main_keyboard:
+keyboard_listen:
 	; 2-step method
 	step1:
 		; Configure rows as output pins
@@ -210,37 +210,66 @@ Key3Pressed:
 	RJMP KeyboardPressedEnd
 
 Key4Pressed:
-	RCALL move_left
+	game_get_state					; Get the current game state (stored in R10)
+	MOV R24, R10					; Copy R10 into R24 (R24 SHOULD NOT BE MODIFIED IN ACTION FUNCTIONS!)
+	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
+		RCALL move_left
 	RJMP KeyboardPressedEnd
 
 Key5Pressed:
-	RCALL move_down
+	game_get_state					; Get the current game state (stored in R10)
+	MOV R24, R10					; Copy R10 into R24 (R24 SHOULD NOT BE MODIFIED IN ACTION FUNCTIONS!)
+	SBRC R24, GS_INIT				; Skip next if game state is not GS_INIT
+		RCALL player_select_2		; Select Player 2 (bottom)
+	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
+		RCALL move_down
 	RJMP KeyboardPressedEnd
 
 Key6Pressed:
-	RCALL move_right
+	game_get_state					; Get the current game state (stored in R10)
+	MOV R24, R10					; Copy R10 into R24 (R24 SHOULD NOT BE MODIFIED IN ACTION FUNCTIONS!)
+	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
+		RCALL move_right
 	RJMP KeyboardPressedEnd
 
 Key7Pressed:
-    RCALL rotate_ship
+	game_get_state					; Get the current game state (stored in R10)
+	MOV R24, R10					; Copy R10 into R24 (R24 SHOULD NOT BE MODIFIED IN ACTION FUNCTIONS!)
+	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
+		RCALL rotate_ship
 	RJMP KeyboardPressedEnd
 
 Key8Pressed:
-	RCALL move_up
+	game_get_state					; Get the current game state (stored in R10)
+	MOV R24, R10					; Copy R10 into R24 (R24 SHOULD NOT BE MODIFIED IN ACTION FUNCTIONS!)
+	SBRC R24, GS_INIT				; Skip next if game state is not GS_INIT
+		RCALL player_select_1		; Select Player 1 (top)
+	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
+		RCALL move_up
 	RJMP KeyboardPressedEnd
 
 Key9Pressed:
-	RCALL place_ship
-    sleep_ts 5
+	game_get_state					; Get the current game state (stored in R10)
+	MOV R24, R10					; Copy R10 into R24 (R24 SHOULD NOT BE MODIFIED IN ACTION FUNCTIONS!)
+	SBRC R24, GS_INIT				; Skip next if game state is not GS_INIT
+		RCALL player_select_validate; Validate selected player
+	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
+		RCALL place_ship
 	RJMP KeyboardPressedEnd
 
 KeyAPressed:
+	game_get_state					; Get the current game state (stored in R10)
+	MOV R24, R10					; Copy R10 into R24 (R24 SHOULD NOT BE MODIFIED IN ACTION FUNCTIONS!)
+	SBRC R24, GS_INIT				; Skip next if game state is not GS_INIT
+		JMP init_ships_placement	; Go to Ships Placement if A is pressed to skip I2C discovery (for development purpose)
 	RJMP KeyboardPressedEnd
 
 KeyBPressed:
 	RJMP KeyboardPressedEnd
 
 KeyCPressed:
+	; Reset the game if C is pressed
+	JMP init_game
 	RJMP KeyboardPressedEnd
 
 KeyDPressed:

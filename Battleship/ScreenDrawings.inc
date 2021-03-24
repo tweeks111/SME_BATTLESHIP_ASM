@@ -66,6 +66,12 @@
 	draw_line 20, 5, @0, 1
 .endmacro
 
+.macro draw_small_right_arrow
+	draw_line @0, @1, @2, 4
+	draw_line @0+2, @1-1, @2, 1
+	draw_line @0+2, @1+1, @2, 1
+.endmacro
+
 draw_boards:
 	draw_left_board 2
 	draw_right_board 2

@@ -47,14 +47,21 @@
 ;------------------------;
 
 ;------------------------;
+;   Keyboard Reserved    ;
+;------------------------;
+; R24 | Kbd action sel.  ;
+;------------------------;
+
+;------------------------;
 ; Interrupts Temp. Regs. ;
 ;------------------------;
-; R25  | Temp. register  ;
+; R25 | Temp. register   ;
 ;------------------------;
+
 
 .INCLUDE "m328pdef.inc"
 .ORG 0x0000
-JMP init
+JMP init						; Not RJMP because our program is... too fat -_-
 .ORG 0x0012
 RJMP Timer2OverflowInterrupt
 .ORG 0x001A
@@ -73,6 +80,7 @@ RJMP Timer0OverflowInterrupt
 .INCLUDE "Game.inc"
 .INCLUDE "Keyboard.inc"
 .INCLUDE "Animations.inc"
+.INCLUDE "PlayerMenu.inc"
 
 init:
 	; Configure output pin PC3 (LED BOTTOM)
@@ -87,25 +95,27 @@ init:
 	
 	; This enables ALL previously configured interrupts
 	SEI					; Enable Global Interrupt Flag
-	
-	; Clear the screen
-	CLR R10
-	RCALL screen_fill
 
-	; Write the game's home screen
-	draw_title 3
+init_game:
+	; Clear the screen
+	RCALL screen_clear
+
+	; Write the game's Home Screen
 	buzzer_sound_async Sound_Intro_Long
+	draw_title 3
 	RCALL anim_intro
 
+	; After the Home Screen, show the player selector
 	RCALL player_select_menu
-
-	;draw_left_board 2
-	;draw_right_board 2
-
-	//Entering state1 
-	LDI R16, 0x01	; State byte
-	MOV R9, R16
-
+	
+init_ships_placement:
+	; Set current game state to SHIPS_PLACEMENT
+	game_change_state GS_SHIPS_PLACEMENT
+	
+	; Draw the boards
+	RCALL screen_clear
+	RCALL draw_boards
+	
 	LDI YH,0x01
 	LDI YL,0x8E
 	LDI R16, 0x03	; X cursor
@@ -118,15 +128,6 @@ init:
 	;RCALL comm_slave_discovery
 	
 main:
-	RCALL main_keyboard
+	RCALL keyboard_listen
 
 	RJMP main
-
-
-player_select_menu:
-	RCALL screen_clear
-	draw_word 7, 1, 3, WordPlayer1
-	draw_word 7, 8, 3, WordPlayer2
-
-	; TODO: set the game state to something and wait choice from keyboard...
-	RET
