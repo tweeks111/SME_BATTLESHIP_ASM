@@ -88,6 +88,9 @@
     <Compile Include="main.asm">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="PlayerMenu.inc">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Screen.inc">
       <SubType>Code</SubType>
     </Compile>
