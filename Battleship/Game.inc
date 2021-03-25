@@ -89,17 +89,7 @@ move_up:
 			LDI YH,0x01
 			LDI YL,0x8F
 			ST Y, R24
-			LDI R16, 2
-			ADD R23, R16
-			ADD R24, R16
-			MOV R10, R23	; X
-			MOV R11, R24	; Y
-			LDI R16, 3
-			MOV R12, R16	; Brightness
-			LDI R16, 1
-			MOV R13, R16	; Width =1
-			MOV R14, R22	; Height
-			RCALL screen_set_rect
+			draw_ship_left R23, R24, 3, R22, 1
 			RJMP end_move_up
 
 	move_up_h_ship:
@@ -111,17 +101,7 @@ move_up:
 			LDI YH,0x01
 			LDI YL,0x8F
 			ST Y, R24
-			LDI R16, 2
-			ADD R23, R16
-			ADD R24, R16
-			MOV R10, R23	; X
-			MOV R11, R24	; Y
-			LDI R16, 3		
-			MOV R12, R16	; Brightness
-			LDI R16, 1
-			MOV R13, R22	; Width
-			MOV R14, R16	; Heigth = 1
-			RCALL screen_set_rect
+			draw_ship_left R23, R24, 3, R22, 0
 	end_move_up:
 	RET
 
@@ -180,19 +160,8 @@ move_down:
 			LDI YH,0x01
 			LDI YL,0x8F
 			ST Y, R24
-			LDI R16, 2
-			ADD R23, R16
-			ADD R24, R16
-			MOV R10, R23	; X
-			MOV R11, R24	; Y
-			LDI R16, 3
-			MOV R12, R16	; Brightness
-			LDI R16, 1
-			MOV R13, R16	; Width =1
-			MOV R14, R22	; Height
-			RCALL screen_set_rect
+			draw_ship_left R23, R24, 3, R22, 1
 			RJMP end_move_down
-
 	move_down_h_ship:
 		CPI R24, 9
 		BREQ end_move_down
@@ -202,17 +171,7 @@ move_down:
 			LDI YH,0x01
 			LDI YL,0x8F
 			ST Y, R24
-			LDI R16, 2
-			ADD R23, R16
-			ADD R24, R16
-			MOV R10, R23	; X
-			MOV R11, R24	; Y
-			LDI R16, 3		
-			MOV R12, R16	; Brightness
-			LDI R16, 1
-			MOV R13, R22	; Width
-			MOV R14, R16	; Heigth = 1
-			RCALL screen_set_rect
+			draw_ship_left R23, R24, 3, R22, 0
 	end_move_down:
 	RET
 
@@ -269,17 +228,7 @@ move_left:
 			LDI YH,0x01
 			LDI YL,0x8E
 			ST Y, R23
-			LDI R16, 2
-			ADD R23, R16
-			ADD R24, R16
-			MOV R10, R23	; X
-			MOV R11, R24	; Y
-			LDI R16, 3
-			MOV R12, R16	; Brightness
-			LDI R16, 1
-			MOV R13, R16	; Width =1
-			MOV R14, R22	; Height
-			RCALL screen_set_rect
+			draw_ship_left R23, R24, 3, R22, 1
 			RJMP end_move_left
 
 	move_left_h_ship:
@@ -291,17 +240,7 @@ move_left:
 			LDI YH,0x01
 			LDI YL,0x8E
 			ST Y, R23
-			LDI R16, 2
-			ADD R23, R16
-			ADD R24, R16
-			MOV R10, R23	; X
-			MOV R11, R24	; Y
-			LDI R16, 3		
-			MOV R12, R16	; Brightness
-			LDI R16, 1
-			MOV R13, R22	; Width
-			MOV R14, R16	; Heigth = 1
-			RCALL screen_set_rect
+			draw_ship_left R23, R24, 3, R22, 0
 	end_move_left:
 	RET
 
@@ -357,17 +296,7 @@ move_right:
 			LDI YH,0x01
 			LDI YL,0x8E
 			ST Y, R23
-			LDI R16, 2
-			ADD R23, R16
-			ADD R24, R16
-			MOV R10, R23	; X
-			MOV R11, R24	; Y
-			LDI R16, 3
-			MOV R12, R16	; Brightness
-			LDI R16, 1
-			MOV R13, R16	; Width =1
-			MOV R14, R22	; Height
-			RCALL screen_set_rect
+			draw_ship_left R23, R24, 3, R22, 1
 			RJMP end_move_right
 
 	move_right_h_ship:
@@ -381,33 +310,66 @@ move_right:
 			LDI YH,0x01
 			LDI YL,0x8E
 			ST Y, R23
-			LDI R16, 2
-			ADD R23, R16
-			ADD R24, R16
-			MOV R10, R23	; X
-			MOV R11, R24	; Y
-			LDI R16, 3		
-			MOV R12, R16	; Brightness
-			LDI R16, 1
-			MOV R13, R22	; Width
-			MOV R14, R16	; Heigth = 1
+			draw_ship_left R23, R24, 3, R22, 0
 			RCALL screen_set_rect
 	end_move_right:
 	RET
 
 rotate_ship:
+	RCALL screen_clear
+	RCALL draw_boards
 	LDI YH,0x01
 	LDI YL,0x8D
 	LD R16, Y
+	SBRC R16, 0
+		LDI R17, 5
+	SBRC R16, 1
+		LDI R17, 4
+	SBRC R16, 2
+		LDI R17, 3
+	SBRC R16, 3
+		LDI R17, 3
+	SBRC R16, 4
+		LDI R17, 2
 	SBRC R16, 7
 		RJMP set_horizontal
 	set_vertical:
 		SBR R16, 0b10000000
-		RJMP end_rotate_ship
+		ST Y+, R16
+		LDI R16, 1		
+		MOV R14, R16	; Set orientation to 1
+		MOV R13, R17	; Set length
+		LD R10, Y+		; Load X value
+		LD R16, Y		; Load Y value
+		MOV R18, R16
+		ADD R18, R17
+		SUBI R18, 10
+		BRMI rs_no_dec_v
+			SUB R16, R18
+		rs_no_dec_v:
+			ST Y, R16		; Store decremented Y
+			MOV R11, R16
+			RJMP end_rotate_ship
 	set_horizontal:
 		CBR R16, 0b10000000
+		ST Y+, R16
+		LDI R16, 0
+		MOV R14, R16	; Set orientation to 0
+		MOV R13, R17	; Set length
+		LD R16, Y		; Load X value
+		MOV R18, R16
+		ADD R18, R17
+		SUBI R18, 10
+		BRMI rs_no_dec_h
+			SUB R16, R18
+		rs_no_dec_h:
+			ST Y+, R16		; Store decremented X
+			MOV R10, R16
+			LD R11, Y		; Load Y value
 	end_rotate_ship:
-		ST Y, R16
+		LDI R16, 3
+		MOV R12, R16
+		RCALL screen_set_ship_left
 		RET
 
 place_ship:
@@ -427,7 +389,6 @@ place_ship:
 		RJMP place_ship3
 	SBRC R21, 4
 		RJMP place_ship4
-
 	RJMP end_place_ship
 
 	place_ship0:

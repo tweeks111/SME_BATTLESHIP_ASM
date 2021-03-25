@@ -117,12 +117,22 @@ init_ships_placement:
 	RCALL draw_boards
 	
 	LDI YH,0x01
-	LDI YL,0x8E
+	LDI YL,0x8D
+	LDI R16, 0x01	; 1st ship
+	ST Y+, R16
 	LDI R16, 0x03	; X cursor
+	MOV R10, R16
 	ST Y+, R16
 	LDI R16, 0x03	; Y cursor
+	MOV R11, R16
 	ST Y, R16
-	RCALL draw_cursor
+	LDI R16, 3		; Brightness 
+	MOV R12, R16
+	LDI R16, 5		; Length 1st ship
+	MOV R13, R16
+	LDI R16, 0		; Orientation 1st ship
+	MOV R14, R16
+	RCALL screen_set_ship_left
 
 	;RCALL comm_master_discovery
 	;RCALL comm_slave_discovery
