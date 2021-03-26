@@ -421,16 +421,23 @@ check_overlap:
 
 		RCALL screen_set_PCS
 
-		LDI YH,high(CURSOR_X)
-		LDI YL,low(CURSOR_X)
-		LD R10, Y+
-		LD R11, Y
-		LDI R16, 3
-		MOV R12, R16
 		LDI YH,high(SL)
 		LDI YL,low(SL)
-		LD R13, Y	; Ship Length
-		LDI R16, 0
-		MOV R14, R16
-		RCALL screen_set_ship_left
+		LD R16, Y	; Ship Length
+		CPI R16, 1
+		BREQ ret_place_ship
+			MOV R13, R16
+			LDI YH,high(CURSOR_X)
+			LDI YL,low(CURSOR_X)
+			LD R10, Y+
+			LD R11, Y
+			LDI R16, 3
+			MOV R12, R16
+			LDI YH,high(SL)
+			LDI YL,low(SL)
+			LD R13, Y	; Ship Length
+			LDI R16, 0
+			MOV R14, R16
+			RCALL screen_set_ship_left
+		ret_place_ship:
 		RET
