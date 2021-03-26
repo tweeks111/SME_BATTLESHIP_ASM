@@ -254,7 +254,7 @@ Key9Pressed:
 	SBRC R24, GS_INIT				; Skip next if game state is not GS_INIT
 		RCALL player_select_validate; Validate selected player
 	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
-		RCALL place_ship
+		RCALL check_overlap
 	RJMP KeyboardPressedEnd
 
 KeyAPressed:
