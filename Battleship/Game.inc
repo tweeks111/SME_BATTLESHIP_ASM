@@ -292,6 +292,7 @@ check_overlap:
 	LDI R18, 10		; Row Length
 	MOV R16, R18
 	MUL R16, R23	; Row = Row length * Row index
+	MOV R16, R0
 	ADD R16, R22	; Row + column index
 
 	SBRS R21, 7		; Skip if vertical
@@ -383,6 +384,7 @@ check_overlap:
 			
 			LDI R16, 10		; Row Length
 			MUL R16, R23	; Row = Row length * Row index
+			MOV R16, R0
 			ADD R16, R22	; Row + column index
 			LDI R17, 2		; 0x02: Cell occupied by a ship (healty part of a ship)
 
