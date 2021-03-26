@@ -111,13 +111,13 @@ init_game:
 init_ships_placement:
 	; Set current game state to SHIPS_PLACEMENT
 	game_change_state GS_SHIPS_PLACEMENT
-	
+
+	RCALL init_map_cells
+
 	; Draw the boards
 	RCALL screen_clear
 	RCALL draw_boards
-	
 
-	RCALL init_map_cells
 	LDI YH,high(SPS)
 	LDI YL,low(SPS)
 	LDI R16, 0x01	; 1st ship

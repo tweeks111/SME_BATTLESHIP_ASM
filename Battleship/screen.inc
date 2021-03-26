@@ -43,6 +43,9 @@
 #define _SMALL_SPACE 0xF0
 #define _WORD_END 0xFF
 
+#define PCS				0x0200
+#define ECS				0x0300
+
 ; The frequency of 56kHz for Timer0 results in a whole screen refreshing rate of 500Hz.
 ; When a pixel has a value of 1 (lowest PWM value), it is displayed at 100Hz.
 ; This is the lowest frequency needed to remove any twinkling effect for any possible
@@ -648,6 +651,37 @@ screen_set_word:
 
 	ssw_word_end:
 	RET
+
+screen_set_PCS:
+	LDI ZH, high(PCS)
+	LDI ZL, low(PCS)
+
+	LDI R21, 0	; Y
+	ss_Y_loop:
+		LDI R20, 0	; X
+		ss_X_loop:
+			LD R16, Z+
+			SBRC R16, 1
+			RCALL ss_draw_point
+			INC R20
+			CPI R20, 10
+			BRNE ss_X_loop
+		INC R21
+		CPI R21, 10
+		BRNE ss_Y_loop
+	RET
+
+	ss_draw_point:
+		LDI R16, 2
+		MOV R10, R20
+		ADD R10, R16
+		MOV R11, R21
+		ADD R11, R16
+		LDI R16, 1
+		MOV R12, R16	
+		MOV R13, R16
+		RCALL screen_set_hline
+		RET
 
 
 ; Characters table (6 bytes per character)

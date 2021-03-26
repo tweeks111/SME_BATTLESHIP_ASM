@@ -18,8 +18,6 @@
 #define CURSOR_X		0x018E
 #define CURSOR_Y		0x018F
 #define SL				0x019D	; Ship Length
-#define PCS				0x0200
-#define ECS				0x0300
 
 ; Ship Storage
 #define SHIP1 0x01A0
@@ -81,6 +79,7 @@ move_up:
 	BREQ end_move_up
 		RCALL screen_clear
 		RCALL draw_boards
+		RCALL screen_set_PCS
 		DEC R23
 		LDI YH,high(CURSOR_Y)
 		LDI YL,low(CURSOR_Y)
@@ -121,6 +120,7 @@ move_down:
 		BREQ end_move_down
 			RCALL screen_clear
 			RCALL draw_boards
+			RCALL screen_set_PCS
 			SUB R23, R24
 			INC R23
 			LDI YH,high(CURSOR_Y)
@@ -133,6 +133,7 @@ move_down:
 		BREQ end_move_down
 			RCALL screen_clear
 			RCALL draw_boards
+			RCALL screen_set_PCS
 			INC R23
 			LDI YH,high(CURSOR_Y)
 			LDI YL,low(CURSOR_Y)
@@ -155,6 +156,7 @@ move_left:
 		BREQ end_move_left
 			RCALL screen_clear
 			RCALL draw_boards
+			RCALL screen_set_PCS
 			DEC R22
 			LDI YH,high(CURSOR_X)
 			LDI YL,low(CURSOR_X)
@@ -195,6 +197,7 @@ move_right:
 		BREQ end_move_right
 			RCALL screen_clear
 			RCALL draw_boards
+			RCALL screen_set_PCS
 			INC R22
 			LDI YH,high(CURSOR_X)
 			LDI YL,low(CURSOR_X)
@@ -208,6 +211,7 @@ move_right:
 		BREQ end_move_right
 			RCALL screen_clear
 			RCALL draw_boards
+			RCALL screen_set_PCS
 			SUB R22, R24
 			INC R22
 			LDI YH,high(CURSOR_X)
@@ -227,6 +231,7 @@ rotate_ship:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	RCALL screen_clear
 	RCALL draw_boards
+	RCALL screen_set_PCS
 	LDI YH,high(SL)
 	LDI YL,low(SL)
 	LD R17, Y	; Ship Length
@@ -411,4 +416,5 @@ check_overlap:
 		LD R21, Y	; SPS
 		LSL R21
 		ST Y, R21
+		RCALL screen_set_PCS
 		RET
