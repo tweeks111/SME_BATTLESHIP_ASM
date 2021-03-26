@@ -83,6 +83,7 @@
 	RCALL screen_set_ship_left
 .endmacro
 
+
 draw_boards:
 	draw_left_board 2
 	draw_right_board 2

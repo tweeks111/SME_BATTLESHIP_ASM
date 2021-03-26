@@ -315,9 +315,10 @@ check_overlap:
 	check_horizontal:
 		LDI YH, high(PCS)
 		MOV YL, R16
-		LD R17, Y+
+		LD R17, Y
 		CPI R17, 2		; Ship Placed in PCS => 0x02
 		BREQ overlap
+		INC R16
 		DEC R24
 		BRNE check_horizontal
 		RJMP place_ship
@@ -340,8 +341,8 @@ check_overlap:
 			LDI YL,low(SHIP5)
 			LDI R16, 5	; Ship ID
 			RCALL add_ship_to_PS
-			LDI R16, 1	; Next Ship Length
 			game_change_state 3
+			LDI R16, 1	; Next Ship Length
 			RJMP add_ship_to_PCS
 		place_ship4:
 			LDI YH,high(SHIP4)
@@ -407,6 +408,7 @@ check_overlap:
 				LDI YH, high(PCS)
 				MOV YL, R16
 				ST Y+, R17
+				INC R16
 				DEC R24
 				BRNE ship_is_horizontal
 			
@@ -416,5 +418,19 @@ check_overlap:
 		LD R21, Y	; SPS
 		LSL R21
 		ST Y, R21
+
 		RCALL screen_set_PCS
+
+		LDI YH,high(CURSOR_X)
+		LDI YL,low(CURSOR_X)
+		LD R10, Y+
+		LD R11, Y
+		LDI R16, 3
+		MOV R12, R16
+		LDI YH,high(SL)
+		LDI YL,low(SL)
+		LD R13, Y	; Ship Length
+		LDI R16, 0
+		MOV R14, R16
+		RCALL screen_set_ship_left
 		RET
