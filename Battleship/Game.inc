@@ -9,6 +9,7 @@
 #define GS_INIT				0
 #define GS_DISCOVERY		1
 #define GS_SHIPS_PLACEMENT	2
+#define GS_MAIN_GAME		3
 ; TODO.....
 
 ; Game state byte address in SRAM
@@ -278,7 +279,7 @@ check_overlap:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; Place the ship on left board
 	; If the ship overlap another ship it cannot be placed
-	; NOTE: this function changes: R16, R21, R22, R23
+	; NOTE: this function changes: R16, R17, R18, R21, R22, R23, R24
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	LDI YH,high(SPS)
 	LDI YL,low(SPS)
@@ -290,28 +291,27 @@ check_overlap:
 	LD R24, Y	; Ship Length
 
 	LDI R18, 10		; Row Length
-	MOV R16, R18
-	MUL R16, R23	; Row = Row length * Row index
+	MUL R18, R23	; Row = Row length * Row index
 	MOV R16, R0
 	ADD R16, R22	; Row + column index
 
 	SBRS R21, 7		; Skip if vertical
 		RJMP check_horizontal
 	check_vertical:
-		LDI YH, 0x02
+		LDI YH, high(PCS)
 		MOV YL, R16
 		LD R17, Y
-		CPI R17, 2
+		CPI R17, 2		; Ship Placed in PCS => 0x02
 		BREQ overlap
-		ADD R16, R18
+		ADD R16, R18	; +10 bytes for next row
 		DEC R24
 		BRNE check_vertical
 		RJMP place_ship
 	check_horizontal:
-		LDI YH, 0x02
+		LDI YH, high(PCS)
 		MOV YL, R16
 		LD R17, Y+
-		CPI R17, 2
+		CPI R17, 2		; Ship Placed in PCS => 0x02
 		BREQ overlap
 		DEC R24
 		BRNE check_horizontal
@@ -333,37 +333,38 @@ check_overlap:
 		place_ship5:
 			LDI YH,high(SHIP5)
 			LDI YL,low(SHIP5)
-			LDI R16, 5
+			LDI R16, 5	; Ship ID
 			RCALL add_ship_to_PS
-			LDI R16, 1
+			LDI R16, 1	; Next Ship Length
+			game_change_state 3
 			RJMP add_ship_to_PCS
 		place_ship4:
 			LDI YH,high(SHIP4)
 			LDI YL,low(SHIP4)
-			LDI R16, 4
+			LDI R16, 4	; Ship ID
 			RCALL add_ship_to_PS
-			LDI R16, 2
+			LDI R16, 2  ; Next Ship Length
 			RJMP add_ship_to_PCS
 		place_ship3:
 			LDI YH,high(SHIP3)
 			LDI YL,low(SHIP3)
-			LDI R16, 3
+			LDI R16, 3	; Ship ID
 			RCALL add_ship_to_PS
-			LDI R16, 3
+			LDI R16, 3  ; Next Ship Length
 			RJMP add_ship_to_PCS
 		place_ship2:
 			LDI YH,high(SHIP2)
 			LDI YL,low(SHIP2)
-			LDI R16, 2
+			LDI R16, 2	; Ship ID
 			RCALL add_ship_to_PS
-			LDI R16, 3
+			LDI R16, 3  ; Next Ship Length
 			RJMP add_ship_to_PCS
 		place_ship1:
 			LDI YH,high(SHIP1)
 			LDI YL,low(SHIP1)
-			LDI R16, 1
+			LDI R16, 1	; Ship ID
 			RCALL add_ship_to_PS
-			LDI R16, 4
+			LDI R16, 4  ; Next Ship Length
 			RJMP add_ship_to_PCS
 
 		add_ship_to_PS:
@@ -381,9 +382,8 @@ check_overlap:
 			LDI YL,low(SL)
 			LD R24, Y		; Ship Length
 			ST Y, R16		; Store next ship length
-			
-			LDI R16, 10		; Row Length
-			MUL R16, R23	; Row = Row length * Row index
+
+			MUL R18, R23	; Row = Row length * Row index
 			MOV R16, R0
 			ADD R16, R22	; Row + column index
 			LDI R17, 2		; 0x02: Cell occupied by a ship (healty part of a ship)
@@ -391,7 +391,7 @@ check_overlap:
 			SBRS R21, 7		; Skip if vertical
 				RJMP ship_is_horizontal
 			ship_is_vertical:
-				LDI YH, 0x02
+				LDI YH, high(PCS)
 				MOV YL, R16
 				ST Y, R17
 				ADD R16, R18
@@ -399,11 +399,11 @@ check_overlap:
 				BRNE ship_is_vertical
 				RJMP end_place_ship
 			ship_is_horizontal:
-				LDI YH, 0x02
+				LDI YH, high(PCS)
 				MOV YL, R16
 				ST Y+, R17
 				DEC R24
-				BRNE ship_is_vertical
+				BRNE ship_is_horizontal
 			
 		end_place_ship:
 		LDI YH,high(SPS)
