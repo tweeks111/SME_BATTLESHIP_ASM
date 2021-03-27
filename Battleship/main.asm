@@ -77,13 +77,13 @@ JMP Timer0OverflowInterrupt
 .INCLUDE "Buzzer.inc"
 .INCLUDE "Screen.inc"
 .INCLUDE "ScreenDrawings.inc"
+.INCLUDE "Game.inc"
 .INCLUDE "GameMaps.inc"
 .INCLUDE "Cursor.inc"
 .INCLUDE "Placement.inc"
-.INCLUDE "Game.inc"
 .INCLUDE "Keyboard.inc"
 .INCLUDE "Animations.inc"
-.INCLUDE "PlayerMenu.inc"
+.INCLUDE "PlayerSelect.inc"
 
 init:
 	; Configure output pin PC3 (LED BOTTOM)
@@ -128,9 +128,12 @@ init_ships_placement:
 	RCALL screen_clear
 	RCALL draw_boards
 
+	; If player 2 is selected (SLAVE), call comm_slave_ship_placement_prepare
+	player_2_rcall comm_slave_ship_placement_prepare
+
 	; Start ship placement
 	RCALL start_ship_placement
-	
+
 	isp_ship_placement_loop:
 		; Listen to keyboard
 		RCALL keyboard_listen
@@ -149,6 +152,21 @@ init_ships_placement:
 		; Exit the loop if SPS_DONE_BIT is set
 		SBRS R16, SPS_DONE_BIT
 		RJMP isp_ship_placement_loop
+		
+	; RCALL to comm_master_ship_placement_done if Player 1 selected, else RCALL comm_slave_ship_placement_done.
+	selected_player_rcall comm_master_ship_placement_done, comm_slave_ship_placement_done
+	
+init_main_game:
+	; Set current game state to SHIPS_PLACEMENT
+	game_change_state GS_MAIN_GAME
+
+	; Update the game maps
+	RCALL update_game_maps
+
+	; DEBUG ENTRIES...
+	buzzer_sound_async Sound_Winner
+	CBI PORTC,3
+
 
 main:
 

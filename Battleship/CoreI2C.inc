@@ -559,6 +559,8 @@ i2c_slave_receive_packet:
 	; This function receives a packet (5 bytes) from the I²C bus.
 	; The 5 bytes read are stored into 5 registers: R[10;14].
 	; The exit status is written in R15 (0x00 if succes, 0xFF if error).
+	; This function can also be accessed with _no_listening suffix if the
+	; listening mode was already set previously.
 	; NOTE: this function modifies: R16, R17
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -571,6 +573,7 @@ i2c_slave_receive_packet:
 	; Place slave in listening mode
 	i2c_slave_enter_listening_mode
 	
+i2c_slave_receive_packet_no_listening:
 	; Wait for TWINT Flag set. This indicates that the slave has been addressed by its own slave address
 	RCALL i2c_wait_int_flag
 

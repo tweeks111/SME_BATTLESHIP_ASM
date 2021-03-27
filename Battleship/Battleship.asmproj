@@ -110,7 +110,7 @@
     <Compile Include="Placement.inc">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="PlayerMenu.inc">
+    <Compile Include="PlayerSelect.inc">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Screen.inc">

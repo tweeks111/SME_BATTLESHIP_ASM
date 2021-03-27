@@ -56,40 +56,80 @@ init_map_cells:
 
 	RET
 
-screen_set_PCS:
+update_game_maps:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; Write the current PCS to the screen
-	; Note : this function changes: R16, R17, R18, R19, R20, R21
+	; This function updates the game maps (left and right)
+	; NOTE: this function uses: R16, R17, R18, R19, R20, R21
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; Draw two rectangles to clear the two game maps
+	draw_rect 2, 2, 0, 10, 10
+	draw_rect 29, 2, 0, 10, 10
+
+	; Re-draw the PCS
+	RCALL screen_set_PCS_ships
+
+	; Re-draw the cursor
+	RCALL screen_set_cursor
+	RET
+
+screen_set_PCS_ships:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function translates the current cells state from PCS to the 
+	; screen (only for PCS_HEALTY_SHIP, other states are animated).
+	; Note: this function changes: R16, R17, R18, R19, R20, R21
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	LDI ZH, high(PCS_ADDR)
 	LDI ZL, low(PCS_ADDR)
 	
-	LDI R16, 1
-	MOV R12, R16		; Brightness	
-	MOV R13, R16		; Line length
+	; The brightness for a PCS_HEALTY_SHIP cell depends on the current 
+	; game state (low brightness when placing ships, high brightness else).
 
-	LDI R21, 0			; Y
+	LDI R16, 3						; Default brightness = maximum brightness
+	
+	; Get current game state
+	game_get_state
+	SBRC R10, GS_SHIPS_PLACEMENT	; Skip next instruction if game state is not GS_SHIPS_PLACEMENT
+		LDI R16, 1					; Brightness in case of Ship Placement = minimum brightness
+
+	; Store parameters for the function screen_set_hline
+	MOV R12, R16					; Brightness
+	LDI R16, 1
+	MOV R13, R16					; Line length = 1 (point)
+
+	; Loop over the Y position
+	LDI R21, 0
 	ss_Y_loop:
-		LDI R20, 0		; X
+		; Loop over the X position
+		LDI R20, 0
 		ss_X_loop:
+			; Get the cell state for this position
 			LD R16, Z+
-			SBRC R16, 1
-			RCALL ss_draw_point
+
+			; If this cell is a healty part of a ship
+			SBRC R16, PCS_HEALTY_SHIP
+			RCALL ss_draw_ship_point
+
 			INC R20
 			CPI R20, 10
 			BRNE ss_X_loop
+
 		INC R21
 		CPI R21, 10
 		BRNE ss_Y_loop
 	RET
 
-	ss_draw_point:
+	ss_draw_ship_point:
+		; Add the map's offset of 2 pixels
 		LDI R16, 2
 		MOV R10, R20
 		ADD R10, R16
 		MOV R11, R21
 		ADD R11, R16
+
+		; Draw the point on the screen
 		RCALL screen_set_hline
+
 		RET
 		
 	

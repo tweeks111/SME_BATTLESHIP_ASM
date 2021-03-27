@@ -47,21 +47,3 @@
 	LDI YL,low(GAME_STATE_ADDR)
 	LD R10, Y
 .endmacro
-
-	
-update_game_maps:
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function updates the game maps (left and right)
-	; NOTE: this function uses: R16, R17, R18, R19, R20, R21
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	
-	; Draw two rectangles to clear the two game maps
-	draw_rect 2, 2, 0, 10, 10
-	draw_rect 29, 2, 0, 10, 10
-
-	; Re-draw the PCS
-	RCALL screen_set_PCS
-
-	; Re-draw the cursor
-	RCALL screen_set_cursor
-	RET
