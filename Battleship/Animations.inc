@@ -6,13 +6,49 @@
 ; It contains all the functions needed to display animated content
 ; such as blinking pixels on the screen.
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
-AnimationsInterruptRoutine:
-	; This routine runs at 10 Hz
-	;TODO: this will handle the animations
+anim_init:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function initializes animation registers.
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	; Clear the animation counter register
+	CLR R9
+	
 	RET
+
+AnimationsInterruptRoutine:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This routine runs at 10 Hz and increments circularly the animation
+	; counter.
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	; Check if animation counter equals 15
+	MOV R25, R9
+	ANDI R25, 0b00001111		; Mask 4 first bits (others are flags)
+	CPI R25, 0x0F
+	BRNE air_skip_rst
+		; If animation counter reached the max -> reset
+		CLR R9
+
+	air_skip_rst:
+	
+	; Check if first bit of R9 is cleared
+	SBRC R9, 0
+	RJMP air_skip_freq_div
+		; We fall here at 5 Hz
+		; We set the "5 Hz interrupt" bit in the animation counter byte (bit 4)
+		LDI R25, 0b00010000
+		OR R9, R25					; Set bit 4 in anim counter byte
+
+	air_skip_freq_div:
+	; Increment the animation counter
+	INC R9
+
+	RET
+
 
 anim_title_fade:
 	RCALL screen_clear

@@ -5,7 +5,7 @@
 ;
 ; It contains functions manage the left and right game maps.
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
 ; PCS and ECS addresses in SRAM
@@ -81,19 +81,8 @@ screen_set_PCS_ships:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	LDI ZH, high(PCS_ADDR)
 	LDI ZL, low(PCS_ADDR)
-	
-	; The brightness for a PCS_HEALTY_SHIP cell depends on the current 
-	; game state (low brightness when placing ships, high brightness else).
-
-	LDI R16, 3						; Default brightness = maximum brightness
-	
-	; Get current game state
-	game_get_state
-	SBRC R10, GS_SHIPS_PLACEMENT	; Skip next instruction if game state is not GS_SHIPS_PLACEMENT
-		LDI R16, 1					; Brightness in case of Ship Placement = minimum brightness
 
 	; Store parameters for the function screen_set_hline
-	MOV R12, R16					; Brightness
 	LDI R16, 1
 	MOV R13, R16					; Line length = 1 (point)
 
@@ -106,10 +95,16 @@ screen_set_PCS_ships:
 			; Get the cell state for this position
 			LD R16, Z+
 
-			; If this cell is a healty part of a ship
 			SBRC R16, PCS_HEALTY_SHIP
-			RCALL ss_draw_ship_point
+			RJMP ss_draw_healty_ship_point		; If this cell is a healty part of a ship
 
+			SBRC R16, PCS_HITTED_SHIP
+			RJMP ss_draw_hitted_ship_point		; If this cell is a hitted part of a ship
+
+			SBRC R16, PCS_SUNK_SHIP
+			RJMP ss_draw_sunk_ship_point		; If this cell is part of a sunk ship
+
+			ss_X_loop_end:
 			INC R20
 			CPI R20, 10
 			BRNE ss_X_loop
@@ -119,7 +114,18 @@ screen_set_PCS_ships:
 		BRNE ss_Y_loop
 	RET
 
-	ss_draw_ship_point:
+	ss_draw_healty_ship_point:
+		; The brightness for a PCS_HEALTY_SHIP cell depends on the current 
+		; game state (low brightness when placing ships, high brightness else).
+		LDI R16, 3						; Default brightness = maximum brightness
+	
+		; Get current game state
+		game_get_state
+		SBRC R10, GS_SHIPS_PLACEMENT	; Skip next instruction if game state is not GS_SHIPS_PLACEMENT
+			LDI R16, 1					; Brightness in case of Ship Placement = minimum brightness
+			
+		MOV R12, R16					; Brightness
+
 		; Add the map's offset of 2 pixels
 		LDI R16, 2
 		MOV R10, R20
@@ -130,7 +136,49 @@ screen_set_PCS_ships:
 		; Draw the point on the screen
 		RCALL screen_set_hline
 
-		RET
+		RJMP ss_X_loop_end
+		
+	ss_draw_hitted_ship_point:
+		; Hitted parts of ships are blinking at 2.5 Hz
+		; We use the animation counter to determine if we are in ON or OFF state
+		LDI R16, 3						; Blink from max to min brightness
+		SBRC R9, 2						; Skip next instruction if Bit2 of animation counter cleared (to divide frequency by 4)
+			LDI R16, 1					; Min brightness
+			
+		MOV R12, R16					; Brightness
+		
+		; Add the map's offset of 2 pixels
+		LDI R16, 2
+		MOV R10, R20
+		ADD R10, R16
+		MOV R11, R21
+		ADD R11, R16
+
+		; Draw the point on the screen
+		RCALL screen_set_hline
+
+		RJMP ss_X_loop_end
+		
+	ss_draw_sunk_ship_point:
+		; Sunk of ships are blinking at 1.25 Hz
+		; We use the animation counter to determine if we are in ON or OFF state
+		LDI R16, 3						; Blink from max to min brightness
+		SBRC R9, 3						; Skip next instruction if Bit2 of animation counter cleared (to divide frequency by 8)
+			LDI R16, 0					; LED off
+			
+		MOV R12, R16					; Brightness
+
+		; Add the map's offset of 2 pixels
+		LDI R16, 2
+		MOV R10, R20
+		ADD R10, R16
+		MOV R11, R21
+		ADD R11, R16
+
+		; Draw the point on the screen
+		RCALL screen_set_hline
+
+		RJMP ss_X_loop_end
 		
 	
 set_rect_game_map:

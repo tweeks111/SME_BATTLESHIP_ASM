@@ -5,7 +5,7 @@
 ;
 ; It contains the functions to select the player at the beginning of the game
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
 #define PLAYER_SELECT_ADDR	0x0194

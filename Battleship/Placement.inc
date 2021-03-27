@@ -5,7 +5,7 @@
 ;
 ; It contains functions to place the ships on the left game map.
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
 ; Ship Placement Status

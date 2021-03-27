@@ -5,7 +5,7 @@
 ;
 ; This file contains all the functions needed to use the keyboard. 
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
 #define KEYBOARD_STATE_ADDR 0x0190

@@ -5,7 +5,7 @@
 ;
 ; It contains all the game management functions.
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
 ; GAME STATES DEFINITION (must be less than or equal to 7) ;
@@ -17,13 +17,6 @@
 
 ; Game state byte address in SRAM
 #define GAME_STATE_ADDR		0x0192
-
-; Ship Storage
-#define SHIP1 0x01A0
-#define SHIP2 0x01A4
-#define SHIP3 0x01A8
-#define SHIP4 0x01AC
-#define SHIP5 0x01B0
 
 
 .macro game_change_state

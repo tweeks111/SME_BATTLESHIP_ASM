@@ -6,13 +6,13 @@
 ; It contains all the functions needed communicate two boards using the 
 ; I²C protocol (detailed in the external document: I²C communication protocol).
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
 ; Packet IDs
 #define MASTER_DISCOVERY_ID		0x01
 #define MASTER_SHIPS_READY_ID	0x03
-#define MASTER_PLATER TURN_ID	0x0A
+#define MASTER_PLAYER_TURN_ID	0x0A
 #define MASTER_SHOT_LAUNCH_ID	0x10
 #define MASTER_SHOT_SPLASH_ID	0x12
 #define MASTER_SHOT_HIT_ID		0x14
@@ -211,6 +211,11 @@ comm_slave_ship_placement_done:
 	; If we fall to this label, go back to the beginning after 0.1s
 	sleep_ts 1
 	RJMP comm_slave_ship_placement_done
+
+
+
+
+
 
 comm_unexpected_packet_id:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

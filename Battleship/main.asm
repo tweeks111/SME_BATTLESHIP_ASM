@@ -6,7 +6,7 @@
 ; This is the main file. It includes all the component's files and 
 ; declare the ISRs for all interrupt addresses. 
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
 ; NOTE: R0 and R1 are used to store the result of some operations (e.g. MUL)
@@ -44,6 +44,13 @@
 ;  Persistent Registers  ;
 ;------------------------;
 ; R8  | Timer2 cnt init  ;
+;------------------------;
+
+;------------------------;
+;   Animation Interrupt	 ;
+;  Persistent Registers  ;
+;------------------------;
+; R9  | Animation cnt.	 ;
 ;------------------------;
 
 ;------------------------;
@@ -85,6 +92,7 @@ JMP Timer0OverflowInterrupt
 .INCLUDE "Animations.inc"
 .INCLUDE "PlayerSelect.inc"
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 init:
 	; Configure output pin PC3 (LED BOTTOM)
 	SBI DDRC,3			; Pin PC3 is an output
@@ -95,6 +103,7 @@ init:
 	CALL timer1_mux_init
 	CALL buzzer_init
 	CALL i2c_init
+	CALL anim_init
 
 	; Initialize game maps SRAM content
 	RCALL init_map_cells
@@ -108,6 +117,7 @@ init:
 	; This enables ALL previously configured interrupts
 	SEI					; Enable Global Interrupt Flag
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 init_intro:
 	; Clear the screen
 	RCALL screen_clear
@@ -120,6 +130,7 @@ init_intro:
 	; After the Home Screen, show the player selector
 	RCALL player_select_menu
 	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 init_ships_placement:
 	; Set current game state to SHIPS_PLACEMENT
 	game_change_state GS_SHIPS_PLACEMENT
@@ -156,18 +167,34 @@ init_ships_placement:
 	; RCALL to comm_master_ship_placement_done if Player 1 selected, else RCALL comm_slave_ship_placement_done.
 	selected_player_rcall comm_master_ship_placement_done, comm_slave_ship_placement_done
 	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 init_main_game:
-	; Set current game state to SHIPS_PLACEMENT
+	; Set current game state to GS_MAIN_GAME
 	game_change_state GS_MAIN_GAME
 
 	; Update the game maps
 	RCALL update_game_maps
 
-	; DEBUG ENTRIES...
-	buzzer_sound_async Sound_Winner
-	CBI PORTC,3
+	;
+	; The first player to play is Player 1 (I2C master)
+	;
+
 
 
 main:
+	; Mask to uncheck the bit 4 of the animation counter
+	LDI R16, 0b11101111
+
+	; Check if "5 Hz interrupt flag" is set
+	SBRC R9, 4
+	RJMP refresh_test
 
 	RJMP main
+
+	refresh_test:
+		AND R9, R16
+
+		; Update the game maps (without clearing the whole maps)
+		RCALL screen_set_PCS_ships
+
+		RJMP main

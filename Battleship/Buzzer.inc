@@ -6,7 +6,7 @@
 ; It contains all the functions needed to play tones and 
 ; sounds, and the sounds tables.
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
 ; Tones frequencies -> TCNT value for prescaler 256 (see Excel document)

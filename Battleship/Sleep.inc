@@ -5,7 +5,7 @@
 ;
 ; It contains all the functions needed to generate a sleep (C-like) function.
 ;
-; Authors : Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
 .macro sleep_ts
@@ -17,7 +17,7 @@
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 	LDI R16, @0				; The function sleep_ts_reg uses R16
-	RCALL sleep_ts_reg
+	CALL sleep_ts_reg
 .endmacro
 		
 
