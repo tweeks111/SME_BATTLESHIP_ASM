@@ -86,6 +86,9 @@
     <Compile Include="Buzzer.inc">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Cursor.inc">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Game.inc">
       <SubType>Code</SubType>
     </Compile>
@@ -95,10 +98,16 @@
     <Compile Include="CoreI2C.inc">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="GameMaps.inc">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Keyboard.inc">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="main.asm">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Placement.inc">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlayerMenu.inc">

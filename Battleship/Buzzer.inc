@@ -368,8 +368,12 @@ Sound_Intro_Long:
 Sound_Winner:
 	; Winner sound
 	.db _SOL_3, 1, _SOL_3, 1, _SOL_3, 2, _SOL_3, 2, _DO_4, 2, _SOL_3, 2, _DO_4, 4, 0, 0
-
+	
 Sound_Looser:
 	; Looser sound
 	.db _LA_3, 2, _LAb_3, 2, _SOL_3, 2, _SOLb_3, 2, _FA_3, 8, 0, 0
+		
+Sound_Refused:
+	; Refused sound
+	.db _DO_2, 1, _DO_2, 1, 0, 0
 		

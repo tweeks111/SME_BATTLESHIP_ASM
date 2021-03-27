@@ -15,17 +15,16 @@ AnimationsInterruptRoutine:
 	RET
 
 anim_title_fade:
-	CLR R10
-	RCALL screen_fill
+	RCALL screen_clear
 	draw_title 1
 	sleep_ts 1
-	RCALL screen_fill
+	RCALL screen_clear
 	draw_title 2
 	sleep_ts 1
-	RCALL screen_fill
+	RCALL screen_clear
 	draw_title 3
 	sleep_ts 1
-	RCALL screen_fill
+	RCALL screen_clear
 	draw_title 2
 	sleep_ts 1
 	RET

@@ -61,6 +61,8 @@ player_select_menu:
 	; Here, a player has been selected
 	; Let Player 1 be the master and Player 2 the slave
 
+	; TODO: show an animation/text "Waiting for connection"...
+
 	; If player 1 has been selected
 	SBRS R10,0
 		RJMP psm_p1_master

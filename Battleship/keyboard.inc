@@ -213,7 +213,7 @@ Key4Pressed:
 	game_get_state					; Get the current game state (stored in R10)
 	MOV R24, R10					; Copy R10 into R24 (R24 SHOULD NOT BE MODIFIED IN ACTION FUNCTIONS!)
 	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
-		RCALL move_left
+		RCALL cursor_move_left
 	RJMP KeyboardPressedEnd
 
 Key5Pressed:
@@ -222,21 +222,21 @@ Key5Pressed:
 	SBRC R24, GS_INIT				; Skip next if game state is not GS_INIT
 		RCALL player_select_2		; Select Player 2 (bottom)
 	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
-		RCALL move_down
+		RCALL cursor_move_down
 	RJMP KeyboardPressedEnd
 
 Key6Pressed:
 	game_get_state					; Get the current game state (stored in R10)
 	MOV R24, R10					; Copy R10 into R24 (R24 SHOULD NOT BE MODIFIED IN ACTION FUNCTIONS!)
 	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
-		RCALL move_right
+		RCALL cursor_move_right
 	RJMP KeyboardPressedEnd
 
 Key7Pressed:
 	game_get_state					; Get the current game state (stored in R10)
 	MOV R24, R10					; Copy R10 into R24 (R24 SHOULD NOT BE MODIFIED IN ACTION FUNCTIONS!)
 	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
-		RCALL rotate_ship
+		RCALL cursor_rotate
 	RJMP KeyboardPressedEnd
 
 Key8Pressed:
@@ -245,7 +245,7 @@ Key8Pressed:
 	SBRC R24, GS_INIT				; Skip next if game state is not GS_INIT
 		RCALL player_select_1		; Select Player 1 (top)
 	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
-		RCALL move_up
+		RCALL cursor_move_up
 	RJMP KeyboardPressedEnd
 
 Key9Pressed:
@@ -254,7 +254,7 @@ Key9Pressed:
 	SBRC R24, GS_INIT				; Skip next if game state is not GS_INIT
 		RCALL player_select_validate; Validate selected player
 	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
-		RCALL check_overlap
+		RCALL place_ship
 	RJMP KeyboardPressedEnd
 
 KeyAPressed:
@@ -269,7 +269,7 @@ KeyBPressed:
 
 KeyCPressed:
 	; Reset the game if C is pressed
-	JMP init_game
+	JMP init
 	RJMP KeyboardPressedEnd
 
 KeyDPressed:

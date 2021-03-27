@@ -63,11 +63,11 @@
 .ORG 0x0000
 JMP init						; Not RJMP because our program is... too fat -_-
 .ORG 0x0012
-RJMP Timer2OverflowInterrupt
+JMP Timer2OverflowInterrupt
 .ORG 0x001A
-RJMP Timer1OverflowInterrupt
+JMP Timer1OverflowInterrupt
 .ORG 0x0020
-RJMP Timer0OverflowInterrupt
+JMP Timer0OverflowInterrupt
 
 
 .INCLUDE "Timer1Mux.inc"
@@ -77,6 +77,9 @@ RJMP Timer0OverflowInterrupt
 .INCLUDE "Buzzer.inc"
 .INCLUDE "Screen.inc"
 .INCLUDE "ScreenDrawings.inc"
+.INCLUDE "GameMaps.inc"
+.INCLUDE "Cursor.inc"
+.INCLUDE "Placement.inc"
 .INCLUDE "Game.inc"
 .INCLUDE "Keyboard.inc"
 .INCLUDE "Animations.inc"
@@ -92,11 +95,20 @@ init:
 	CALL timer1_mux_init
 	CALL buzzer_init
 	CALL i2c_init
+
+	; Initialize game maps SRAM content
+	RCALL init_map_cells
+
+	; Initialize player's ships list
+	RCALL init_ships_list
+
+	; Clear the screen
+	RCALL screen_clear
 	
 	; This enables ALL previously configured interrupts
 	SEI					; Enable Global Interrupt Flag
 
-init_game:
+init_intro:
 	; Clear the screen
 	RCALL screen_clear
 
@@ -112,37 +124,32 @@ init_ships_placement:
 	; Set current game state to SHIPS_PLACEMENT
 	game_change_state GS_SHIPS_PLACEMENT
 
-	RCALL init_map_cells
-
 	; Draw the boards
 	RCALL screen_clear
 	RCALL draw_boards
 
-	LDI YH,high(SPS)
-	LDI YL,low(SPS)
-	LDI R16, 0x01	; 1st ship
-	ST Y+, R16
-	LDI R16, 0x03	; X cursor
-	MOV R10, R16
-	ST Y+, R16
-	LDI R16, 0x03	; Y cursor
-	MOV R11, R16
-	ST Y, R16
-	LDI R16, 3		; Brightness 
-	MOV R12, R16
-	LDI R16, 5		; Length 1st ship
-	MOV R13, R16
-	LDI YH,high(SL)
-	LDI YL,low(SL)
-	ST Y, R16
-	LDI R16, 0		; Orientation 1st ship
-	MOV R14, R16
-	RCALL screen_set_ship_left
-
-	;RCALL comm_master_discovery
-	;RCALL comm_slave_discovery
+	; Start ship placement
+	RCALL start_ship_placement
 	
+	isp_ship_placement_loop:
+		; Listen to keyboard
+		RCALL keyboard_listen
+
+		;
+		; Check if ship placement done, else continue the loop
+		;
+
+		; Place Y-pointer to the Ship Placement Status byte
+		LDI YH,high(SPS_ADDR)
+		LDI YL,low(SPS_ADDR)
+
+		; Get the Ship Placement Status byte
+		LD R16, Y
+
+		; Exit the loop if SPS_DONE_BIT is set
+		SBRS R16, SPS_DONE_BIT
+		RJMP isp_ship_placement_loop
+
 main:
-	RCALL keyboard_listen
 
 	RJMP main
