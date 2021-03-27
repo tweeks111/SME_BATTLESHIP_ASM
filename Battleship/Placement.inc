@@ -242,6 +242,9 @@ place_ship:
 
 	; Prepare cursor and SRAM to place the next ship
 	RCALL place_next_ship
+	
+	; Play placement accepted sound
+	buzzer_sound_async Sound_PlacementAccepted
 
 	; Wait 0.4s to filter keyboard glitches
 	sleep_ts 4
@@ -250,8 +253,8 @@ place_ship:
 
 	ps_placement_refused:
 	
-	; Play refused sound if refused (and wait 0.4s to filter keyboard glitches)
-	buzzer_sound_async Sound_Refused
+	; Play placement refused sound if refused (and wait 0.4s to filter keyboard glitches)
+	buzzer_sound_async Sound_PlacementRefused
 	sleep_ts 4
 
 	RET

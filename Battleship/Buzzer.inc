@@ -373,7 +373,11 @@ Sound_Looser:
 	; Looser sound
 	.db _LA_3, 2, _LAb_3, 2, _SOL_3, 2, _SOLb_3, 2, _FA_3, 8, 0, 0
 		
-Sound_Refused:
-	; Refused sound
+Sound_PlacementRefused:
+	; Placement Refused sound
 	.db _DO_2, 1, _DO_2, 1, 0, 0
+		
+Sound_PlacementAccepted:
+	; Placement Accepted sound
+	.db _SOL_3, 1, _DO_4, 1, 0, 0
 		
