@@ -9,7 +9,7 @@
 ;
 
 ; Ship Placement Status
-#define SPS_ADDR			0x019A
+#define SPS_ADDR			0x019E
 #define SPS_CARRIER			0
 #define SPS_BATTLESHIP		1
 #define SPS_CRUISER			2
@@ -80,14 +80,22 @@ start_ship_placement:
 	MOV R10, R16
 	RCALL get_ship_size_id
 	MOV R12, R11			; Ship length is the new cursor's length
-
+	
 	; Place the cursor on the point 0x0 of the left game map
-	LDI R16, 2
-	MOV R10, R16			; Cursor X
-	MOV R11, R16			; Cursor Y
+	CLR R10					; Cursor X
+	CLR R11					; Cursor Y
 	CLR R13					; Cursor Orientation (0 = horizontal)
 	RCALL set_cursor_properties
 	
+	; Set the cursor area to the left game map (rectangle at 2,2;10x10)
+	LDI R16, 2
+	MOV R10, R16
+	MOV R11, R16
+	LDI R16, 10
+	MOV R12, R16
+	MOV R13, R16
+	RCALL set_cursor_area
+
 	; Update the game maps
 	RCALL update_game_maps
 
@@ -127,9 +135,8 @@ place_next_ship:
 	MOV R12, R11			; Ship length is the new cursor's length
 
 	; Place the cursor on the point 0x0 of the left game map
-	LDI R16, 2
-	MOV R10, R16			; Cursor X
-	MOV R11, R16			; Cursor Y
+	CLR R10					; Cursor X
+	CLR R11					; Cursor Y
 	CLR R13					; Cursor Orientation (0 = horizontal)
 	RCALL set_cursor_properties
 	
@@ -162,12 +169,7 @@ place_ship:
 	LD R11, Y+				; Cursor Y
 	LD R12, Y+				; Cursor Length
 	LD R13, Y				; Cursor Orientation
-
-	; Compute ship position relative to game map
-	LDI R16, 2
-	SUB R10, R16
-	SUB R11, R16
-
+	
 	; Place Y-pointer to the SPS byte in SRAM (Ship Placement Status)
 	LDI YH,high(SPS_ADDR)
 	LDI YL,low(SPS_ADDR)
@@ -275,12 +277,7 @@ check_ship_overlap:
 	LD R11, Y+				; Cursor Y
 	LD R12, Y+				; Cursor Length
 	LD R16,	Y				; Cursor Orientation
-
-	; Subtract 2 to X and Y to get the cursor's position relative to the left game map
-	LDI R17, 2
-	SUB R10, R17
-	SUB R11, R17
-
+	
 	; Compute the fist byte index in PCS
 	LDI R17, 10				; 10 cells per row
 	MUL R11, R17			; Multiply Y position with row size

@@ -11,6 +11,29 @@
 ; Cursor data address in SRAM
 #define CURSOR_ADDR			0x0196
 
+; Cursor area data address in SRAM
+#define CURSOR_AREA_ADDR	0x019A
+
+
+set_cursor_area:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function sets the cursor's area.
+	; R10: Area start position X
+	; R11: Area start position  Y
+	; R12: Area Width 
+	; R13: Area Height
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	; Set Y-pointer to the cursor area data byte in SRAM
+	LDI YH,high(CURSOR_AREA_ADDR)
+	LDI YL,low(CURSOR_AREA_ADDR)
+
+	ST Y+, R10		; Area offset position X
+	ST Y+, R11		; Area offset position  Y
+	ST Y+, R12		; Area Width 
+	ST Y, R13		; Area Height
+
+	RET
 
 set_cursor_properties:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,8 +68,8 @@ cursor_move_up:
 	; Get the cursor's Y position
 	LD R16, Y			; Cursor Y
 
-	CPI R16, 3			; Don't move up if the cursor's position is already the maximum
-	BRLO cmu_skip_move_up
+	CPI R16, 0			; Don't move up if the cursor's position is already the maximum
+	BREQ cmu_skip_move_up
 
 		; Decrement and store the cursor's Y position
 		DEC R16
@@ -72,9 +95,14 @@ cursor_move_down:
 	LD R16, Y+			; Cursor Y
 	LD R17, Y+			; Cursor Length
 	LD R18, Y			; Cursor Orientation (0 = horizontal, 1 = vertical)
+	
+	; Set Y-pointer to the cursor area HEIGHT byte in SRAM
+	LDI YH,high(CURSOR_AREA_ADDR+3)
+	LDI YL,low(CURSOR_AREA_ADDR+3)
 
-	; The limit Y position for the pointer is 2 + 9 (for a point-cursor)
-	LDI R19, 11
+	; Get the cursor area height
+	LD R19, Y
+	DEC R19				; Decrement by 1 to use R19 with BRGE (greater or *equal*)
 
 	; Decrement the length before SUB (since the first pixel is at relative position 0)
 	DEC R17
@@ -112,8 +140,8 @@ cursor_move_left:
 	; Get the cursor's data
 	LD R16, Y			; Cursor X
 
-	CPI R16, 3			; Don't move if the cursor's position is already the maximum
-	BRLT cml_skip_move_left
+	CPI R16, 0			; Don't move if the cursor's position is already the maximum
+	BREQ cml_skip_move_left
 
 		; Decrement and store the cursor's X position
 		DEC R16
@@ -140,9 +168,14 @@ cursor_move_right:
 	LD R17, Y+			; Cursor Y (unused -> discarded at next instruction)
 	LD R17, Y+			; Cursor Length
 	LD R18, Y			; Cursor Orientation (0 = horizontal, 1 = vertical)
-
-	; The limit X position for the pointer is 2 + 9 (for a point-cursor)
-	LDI R19, 11
+	
+	; Set Y-pointer to the cursor area WIDTH byte in SRAM
+	LDI YH,high(CURSOR_AREA_ADDR+2)
+	LDI YL,low(CURSOR_AREA_ADDR+2)
+	
+	; Get the cursor area width
+	LD R19, Y
+	DEC R19				; Decrement by 1 to use R19 with BRGE (greater or *equal*)
 
 	; Decrement the length before SUB (since the first pixel is at relative position 0)
 	DEC R17
@@ -183,12 +216,15 @@ cursor_rotate:
 	LD R17, Y+			; Cursor Y
 	LD R18, Y+			; Cursor Length
 	LD R19, Y			; Cursor Orientation (0 = horizontal, 1 = vertical)
+		
+	; Set Y-pointer to the cursor area WIDTH byte in SRAM
+	LDI YH,high(CURSOR_AREA_ADDR+2)
+	LDI YL,low(CURSOR_AREA_ADDR+2)
 	
-	; Decrement the length before SUB (since the first pixel is at relative position 0)
-	DEC R18
+	; Get the cursor area width
+	LD R20, Y+
 
 	; Compute the maximum X position of cursor after rotation
-	LDI R20, 11			; Initially, the most-right position is 11 (for point-cursor)
 	SBRC R19, 0			; Skip next if ship was horizontal before rotate
 	SUB R20, R18		; Subtract the cursor's length if it is horizontal now
 
@@ -198,8 +234,10 @@ cursor_rotate:
 		MOV R16, R20		; If out of limits -> the X limit is the new X position
 
 	cr_skip_x_fix:
+	; Get the cursor area height
+	LD R20, Y+
+
 	; Compute the maximum Y position of cursor after rotation
-	LDI R20, 11			; Initially, the most-down position is 11 (for point-cursor)
 	SBRS R19, 0			; Skip next if ship was vertical before rotate
 	SUB R20, R18		; Subtract the cursor's length if it is vertical now
 	
@@ -246,6 +284,17 @@ screen_set_cursor:
 	; Don't draw the cursor if its length is 0
 	CPI R16, 0
 	BREQ ssc_no_cur
+	
+	; Set Y-pointer to the cursor area data byte in SRAM
+	LDI YH,high(CURSOR_AREA_ADDR)
+	LDI YL,low(CURSOR_AREA_ADDR)
+
+	LD R18, Y+			; Cursor area offset position X
+	LD R19, Y+			; Cursor area offset position Y
+
+	; Add the area start position to the cursor's position
+	ADD R10, R18		; Add X offset
+	ADD R11, R19		; Add Y offset
 
 	LDI R18, 1			; Store a 1 on R18
 
