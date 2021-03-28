@@ -15,25 +15,51 @@
 .endmacro
 
 .macro draw_go
-	draw_rect 14, 2, 3, 12, 9
-	draw_rect 15, 3, 0, 10, 7
-	draw_word 16, 4, 3, WordGo
+	draw_rect 13, 2, 3, 14, 9
+	draw_rect 14, 3, 0, 12, 7
+	draw_word 15, 4, 3, WordGo
+.endmacro
+
+.macro draw_enemy_shot
+	draw_line 0, 2, 3, 40
+	draw_line 0, 10, 3, 40
+	draw_word 2, 4, 3, WordEnemyShot
 .endmacro
 
 .macro draw_miss
-	draw_rect 10, 2, @0, 1 , 9
-	draw_rect 28, 2, @0, 1 , 9
-	draw_line 10, 2, @0, 19
-	draw_line 10, 10, @0, 19
-	draw_word 12, 4, @0, WordMiss
+	draw_rect 6, 2, @0, 1 , 9
+	draw_rect 32, 2, @0, 1 , 9
+	draw_line 6, 2, @0, 27
+	draw_line 6, 10, @0, 27
+	draw_word 8, 4, @0, WordMissed
 .endmacro
 
 .macro draw_hit
-	draw_rect 13, 2, @0, 1 , 9
-	draw_rect 27, 2, @0, 1 , 9
-	draw_line 13, 2, @0, 14
-	draw_line 13, 10, @0, 14
-	draw_word 15, 4, @0, WordHit
+	draw_rect 11, 2, @0, 1 , 9
+	draw_rect 28, 2, @0, 1 , 9
+	draw_line 12, 2, @0, 16
+	draw_line 12, 10, @0, 16
+	draw_word 13, 4, @0, WordHit
+.endmacro
+
+.macro draw_sunk
+	draw_rect 9, 2, @0, 1 , 9
+	draw_rect 30, 2, @0, 1 , 9
+	draw_line 10, 2, @0, 20
+	draw_line 10, 10, @0, 20
+	draw_word 11, 4, @0, WordSunk
+.endmacro
+
+.macro draw_winner
+	draw_word 5, 4, @0, WordYouWon
+	draw_line 0, 2, 3, 40
+	draw_line 0, 10, 3, 40
+.endmacro
+
+.macro draw_looser
+	draw_word 3, 4, @0, WordYouLost
+	draw_line 0, 2, 3, 40
+	draw_line 0, 10, 3, 40
 .endmacro
 
 .macro draw_left_board
@@ -72,62 +98,40 @@
 	draw_line @0+2, @1+1, @2, 1
 .endmacro
 
-.macro draw_ship_left ;($X, $Y, Brightness, $Length, Orientation)
-	MOV R10, @0		; $X
-	MOV R11, @1		; $Y
-	LDI R16, @2		; Brightness
-	MOV R12, R16
-	MOV R13, @3		; $Length	
-	LDI R16, @4		; Orientation
-	MOV R14, R16
-	RCALL screen_set_ship_left
-.endmacro
-
-
 draw_boards:
 	draw_left_board 2
 	draw_right_board 2
 	RET
 
-draw_cursor:
-	LDI YH, 0x01
-	LDI YL, 0x8E
-	LD R16, Y+
-	LD R17, Y
-	LDI R18, 2		// Board Offset
-	ADD R16, R18
-	ADD R17, R18
-	MOV R10, R16
-	MOV R11, R17
-	LDI R16, 2
-	MOV R12, R16
-	LDI R16, 1
-	MOV R13, R16
-	RCALL screen_set_hline
-	RET
+WordPlayer1:
+	.db _P, _L, _A, _Y, _E, _R, _SMALL_SPACE, 1, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
+	
+WordPlayer2:
+	.db _P, _L, _A, _Y, _E, _R, _SMALL_SPACE, 2, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
+	
+WordBattleship:
+	.db _B, _A, _T, _T, _L, _E, _S, _H, _I, _P, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
+	
+WordWaitingFor:
+	.db _W, _A, _T, _I, _N, _G, _SMALL_SPACE, _F, _O, _R, _WORD_END, 0
 
-screen_set_ship_left:
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; Draw a ship on left board
-	; R10: Xrel position
-	; R11: Yrel position
-	; R12: LED brightness value (0 = Off; 1 = 33%, 2 = 67%, 3 = 100%)
-	; R13: Ship length
-	; R14: Ship orientation
-	; NOTE: this function changes: R0, R1, R16, R17, R18, R19
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	LDI R16, 2
-	ADD R10, R16
-	ADD R11, R16
-	LDI R16, 1
-	SBRS R14, 0
-		RJMP draw_h_ship_left
-	draw_v_ship_left:
-		MOV R14, R13	; Height
-		MOV R13, R16	; Width=1
-		RJMP end_draw_ship_left
-	draw_h_ship_left:
-		MOV R14, R16	; Height=1
-	end_draw_ship_left:
-	RCALL screen_set_rect
-	RET
+WordMissed:
+	.db _M, _I, _S, _S, _E, _D, _WORD_END, 0
+	
+WordHit:
+	.db _H, _I, _T, _EXC, _WORD_END, 0
+	
+WordSunk:
+	.db _S, _U, _N, _K, _EXC, _WORD_END
+	
+WordGo:
+	.db _G, _O, _EXC, _WORD_END
+	
+WordEnemyShot:
+	.db _E, _N, _E, _M, _Y, _SMALL_SPACE, _S, _H, _O, _T, _WORD_END, 0
+	
+WordYouWon:
+	.db _Y, _O, _U, _SPACE, _W, _O, _N, _EXC, _WORD_END, 0
+
+WordYouLost:
+	.db _Y, _O, _U, _SPACE, _L, _O, _S, _T, _EXC, _WORD_END

@@ -101,6 +101,9 @@
     <Compile Include="GameMaps.inc">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="GameNotify.inc">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="GameState.inc">
       <SubType>Code</SubType>
     </Compile>

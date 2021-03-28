@@ -71,7 +71,7 @@
 	MOV R12, R16	
 	LDI R16, @3		; G
 	MOV R13, R16	
-	RCALL screen_set_char
+	CALL screen_set_char
 .endmacro
 
 .macro draw_rect
@@ -91,7 +91,7 @@
 	MOV R13, R16	
 	LDI R16, @4		; Height
 	MOV R14, R16	
-	RCALL screen_set_rect
+	CALL screen_set_rect
 .endmacro
 
 .macro draw_line
@@ -109,7 +109,7 @@
 	MOV R12, R16	
 	LDI R16, @3		; Width
 	MOV R13, R16
-	RCALL screen_set_hline
+	CALL screen_set_hline
 .endmacro
 
 .macro draw_point
@@ -127,7 +127,7 @@
 	MOV R12, R16	
 	LDI R16, 1		; Width = 1
 	MOV R13, R16
-	RCALL screen_set_hline
+	CALL screen_set_hline
 .endmacro
 
 .macro draw_word
@@ -151,7 +151,7 @@
 	LDI R16, @2
 	MOV R12,R16
 
-	RCALL screen_set_word
+	CALL screen_set_word
 .endmacro
 
 screen_init:
@@ -354,16 +354,6 @@ screen_fill:
 		DEC R16
 		BRNE sf_loop
 
-	RET
-
-
-screen_clear:
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function clears the whole screen
-	; NOTE: this function changes: R16
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	CLR R10
-	RCALL screen_fill
 	RET
 
 
@@ -649,6 +639,16 @@ screen_set_word:
 
 	ssw_word_end:
 	RET
+	
+
+screen_clear:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function clears the whole screen
+	; NOTE: this function changes: R16
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	CLR R10
+	RCALL screen_fill
+	RET
 
 
 ; Characters table (6 bytes per character)
@@ -696,21 +696,3 @@ CharTable:
 
 	.db 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000 ; White space
 	
-
-WordPlayer1:
-	.db _P, _L, _A, _Y, _E, _R, _SMALL_SPACE, 1, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
-	
-WordPlayer2:
-	.db _P, _L, _A, _Y, _E, _R, _SMALL_SPACE, 2, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
-	
-WordBattleship:
-	.db _B, _A, _T, _T, _L, _E, _S, _H, _I, _P, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
-	
-WordHit:
-	.db _H, _I, _T, _WORD_END
-	
-WordMiss:
-	.db _M, _I, _S, _S, _WORD_END, 0
-
-WordGo:
-	.db _G, _O, _EXC, _WORD_END

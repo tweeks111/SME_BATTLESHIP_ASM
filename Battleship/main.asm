@@ -92,6 +92,7 @@ JMP Timer0OverflowInterrupt
 .INCLUDE "Game.inc"
 .INCLUDE "Keyboard.inc"
 .INCLUDE "Animations.inc"
+.INCLUDE "GameNotify.inc"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 init:
@@ -116,7 +117,7 @@ init:
 	
 	; This enables ALL previously configured interrupts
 	SEI					; Enable Global Interrupt Flag
-
+	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 init_intro:
 	; Clear the screen
@@ -144,6 +145,9 @@ init_ships_placement:
 
 	; Start ship placement
 	RCALL start_ship_placement
+
+	; Small delay to avoid double-press of the keyboard
+	sleep_ts 4
 
 	isp_ship_placement_loop:
 		; Listen to keyboard
@@ -186,6 +190,8 @@ init_main_game:
 		;
 		; Now, it's the turn for Player 1 to play
 		;
+		; Show a notify ("Go" for player 1, "Enemy shot" for player 2)
+		selected_player_rcall game_notify_go, game_notify_enemy_shot
 
 		; If selected player is Player 1 (MASTER), call game_play_turn.
 		player_1_rcall game_play_turn
@@ -207,6 +213,8 @@ init_main_game:
 		;
 		; Now, it's the turn for Player 2 to play
 		;
+		; Show a notify ("Go" for player 2, "Enemy shot" for player 1)
+		selected_player_rcall game_notify_enemy_shot, game_notify_go
 		
 		; If player 2 is selected (SLAVE), call comm_slave_exchange_prepare to start listening I2C
 		player_2_rcall comm_slave_exchange_prepare
@@ -232,18 +240,31 @@ init_main_game:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 game_won:
-		CBI PORTC, 2
+	; Play winner sound
+	buzzer_sound_async Sound_Winner
+	
+	; Clear the screen
+	CALL screen_clear
 
-		RJMP main
+	; Draw winner screen
+	draw_winner 3
+
+	RJMP main
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 game_lost:
-		CBI PORTC, 3
+	; Play looser sound
+	buzzer_sound_async Sound_Looser
+	
+	; Clear the screen
+	CALL screen_clear
 
-		RJMP main
+	; Draw looser screen
+	draw_looser 3
+
+	RJMP main
 
 main:
-
-	RCALL animate_game_maps
+	;RCALL animate_game_maps
 
 	RJMP main
