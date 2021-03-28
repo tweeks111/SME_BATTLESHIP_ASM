@@ -36,8 +36,8 @@ init_ships_list:
 	; Fill the SRAM with 0x00
 	CLR R17
 
-	; Total size of this list: 5*4 bytes = 20 bytes
-	LDI R16, 20
+	; Total size of this list: 5*5 bytes = 25 bytes
+	LDI R16, 25
 
 	; Loop over each byte and write 0x00
 	isl_list_loop:
@@ -195,8 +195,8 @@ place_ship:
 		CPI R17,0
 		BREQ ps_store_ship_sram
 
-		; Jump of 4 bytes with the Y-pointer (next ship ID)
-		LDI R17, 4
+		; Jump of 5 bytes with the Y-pointer (next ship ID)
+		LDI R17, 5
 		ADD YL, R17
 
 		DEC R16
@@ -211,6 +211,7 @@ place_ship:
 	ST Y+, R10		; Store Position X (relative to game map)
 	ST Y+, R11		; Store Position Y (relative to game map)
 	ST Y+, R13		; Store Orientation
+	; No change to the #Hits (initially 0)
 
 	;
 	; Set the PCS cells according to the newly placed ship

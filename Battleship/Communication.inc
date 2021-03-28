@@ -27,6 +27,21 @@
 #define SLAVE_SHOT_SANK_ID		0x17
 
 
+
+comm_slave_exchange_prepare:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function prepare the slave for an exchange. After a call to
+	; this function, the I2C subsystem will automatically ACK the next
+	; SLA+R/W from the master.
+	; NOTE: this function uses: R16
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; Start listening the I2C bus (non-blocking)
+	i2c_slave_enter_listening_mode
+
+	RET
+
+
 comm_master_discovery:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function sends the discovery packet periodically from the 
@@ -57,7 +72,7 @@ comm_master_discovery:
 	
 	; Here, the slave transmitted something to the master
 	
-	LDI R16, SLAVE_DISCOVERY_ID			; 0x02 is the slave discovery packet ID
+	LDI R16, SLAVE_DISCOVERY_ID			; Expected Packet ID
 	CP R10, R16							; R10 is the first packet byte (packet ID)
 	BRNE cmd_retry_again				; Retry after 1s if the received packet wasn't the expected one
 
@@ -89,7 +104,7 @@ comm_slave_discovery:
 	
 	; Here, the master transmitted something to the slave
 
-	LDI R16, MASTER_DISCOVERY_ID		; 0x01 is the master discovery packet ID
+	LDI R16, MASTER_DISCOVERY_ID		; Expected Packet ID
 	CP R10, R16							; R10 is the first packet byte (packet ID)
 	BRNE csd_retry_again				; Retry after 0.1s if the received packet wasn't the expected one
 	
@@ -144,7 +159,7 @@ comm_master_ship_placement_done:
 	
 	; Here, the slave transmitted something to the master
 	
-	LDI R16, SLAVE_SHIPS_READY_ID		; 0x04 is the slave discovery packet ID
+	LDI R16, SLAVE_SHIPS_READY_ID		; Expected Packet ID
 	CPSE R10, R16						; R10 is the first packet byte (packet ID)
 	RJMP comm_unexpected_packet_id		; Fall to comm_unexpected_packet_id if R10 != R16
 	
@@ -157,19 +172,6 @@ comm_master_ship_placement_done:
 	sleep_ts 10
 	RJMP comm_master_ship_placement_done
 
-
-comm_slave_ship_placement_prepare:
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function prepare the slave for ship placement. After a call to
-	; this function, the I2C subsystem will automatically ACK the next
-	; SLA+R/W from the master.
-	; NOTE: this function uses: R16
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	
-	; Start listening the I2C bus (non-blocking)
-	i2c_slave_enter_listening_mode
-
-	RET
 	
 comm_slave_ship_placement_done:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -189,7 +191,7 @@ comm_slave_ship_placement_done:
 	
 	; Here, the master transmitted something to the slave
 
-	LDI R16, MASTER_SHIPS_READY_ID		; 0x01 is the master discovery packet ID
+	LDI R16, MASTER_SHIPS_READY_ID		; Expected Packet ID
 	CPSE R10, R16						; R10 is the first packet byte (packet ID)
 	RJMP comm_unexpected_packet_id		; Fall to comm_unexpected_packet_id if R10 != R16
 	
@@ -213,7 +215,161 @@ comm_slave_ship_placement_done:
 	RJMP comm_slave_ship_placement_done
 
 
+comm_master_send_shooting_launch_packet:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function sends a Shooting Launch packet with the coordinate of
+	; the shot from the master to the slave.
+	; NOTE: this function uses: R16, R17
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; The shot coordinate is the current cursor's position
+	get_cursor_position
+	; Returns: R11						; Packet byte 1
+	; Returns: R12						; Packet byte 2
 
+	; Send the Shooting Launch packet
+	LDI R16, MASTER_SHOT_LAUNCH_ID		; Packet ID
+	MOV R10, R16
+	CLR R13								; Packet byte 3 (unused)
+	CLR R14								; Packet byte 4 (unused)
+	RCALL i2c_master_transmit_packet
+	
+	; The function i2c_master_send_cst_packet returns 0x00 in R15 if success.
+	CLR R16
+	CP R15, R16
+	BRNE cmsslp_retry_again				; Retry after 1s if no slave ACKed
+	
+	; Wait for stop condition of the previous transmission to be sent correctly
+	sleep_ts 1
+
+	; Now wait for the slave to transmit an answer to the Shooting Launch packet
+	RCALL i2c_master_receive_packet
+
+	; The function i2c_master_receive_packet returns 0x00 in R15 if success.
+	CLR R16
+	CP R15, R16
+	BRNE cmsslp_retry_again				; Retry after 1s if the read wasn't successful
+	
+	; Here, we received the answer from the slave
+	; This answer can take multiple packet IDs
+	
+	;TODO: react to following packet IDs: SLAVE_SHOT_SPLASH_ID, SLAVE_SHOT_HIT_ID, SLAVE_SHOT_SANK_ID
+
+	RET
+
+	cmsslp_retry_again:
+	; If we fall to this label, go back to the beginning after 1s
+	sleep_ts 10
+	RJMP comm_master_send_shooting_launch_packet
+
+
+comm_master_receive_shooting_launch_packet:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function receives a Shooting Launch packet with the coordinate 
+	; of the shot executed by the slave (waits for slave's answer).
+	; The slave should directly ACK this request, then send data bytes 
+	; when it is ready.
+	; NOTE: this function uses: R16, R17
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; Wait for the slave to transmit a Shooting Launch packet
+	RCALL i2c_master_receive_packet
+	
+	; The function i2c_master_receive_packet returns 0x00 in R15 if success.
+	CLR R16
+	CP R15, R16
+	BRNE cmrslp_retry_again				; Retry after 0.1s if something was wrong
+	
+	; Here, the slave transmitted something to the master
+
+	LDI R16, SLAVE_SHOT_LAUNCH_ID		; Expected Packet ID
+	CPSE R10, R16						; R10 is the first packet byte (packet ID)
+	RJMP comm_unexpected_packet_id		; Fall to comm_unexpected_packet_id if R10 != R16
+	
+	; React on this shot
+	RCALL game_enemy_fired_position
+
+	RET
+	
+	cmrslp_retry_again:
+	; If we fall to this label, go back to the beginning after 1s
+	sleep_ts 10
+	RJMP comm_master_receive_shooting_launch_packet
+
+
+comm_slave_send_shooting_launch_packet:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function transmit a Shooting Launch packet with the coordinate 
+	; of the shot from the slave to the master (waits for ST request).
+	; NOTE: this function uses: R16, R17
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; The shot coordinate is the current cursor's position
+	get_cursor_position
+	; Returns: R11						; Packet byte 1
+	; Returns: R12						; Packet byte 2
+	
+	; Send the Shooting Launch packet
+	LDI R16, SLAVE_SHOT_LAUNCH_ID		; Packet ID
+	MOV R10, R16
+	CLR R13								; Packet byte 3 (unused)
+	CLR R14								; Packet byte 4 (unused)
+	RCALL i2c_slave_transmit_packet
+	
+	; The function i2c_slave_send_cst_packet returns 0x00 in R15 if success.
+	CLR R16
+	CP R15, R16
+	BRNE cssslp_retry_again				; Retry after 0.1s if something was wrong
+
+	; Now, we must wait for the master's reaction to this Shooting Launch packet
+	
+	; Wait and receive master's reaction packet
+	RCALL i2c_slave_receive_packet
+	
+	; Here, we received the answer from the master
+	; This answer can take multiple packet IDs
+	
+	;TODO: react to following packet IDs: MASTER_SHOT_SPLASH_ID, MASTER_SHOT_HIT_ID, MASTER_SHOT_SANK_ID
+	
+
+	RET
+
+	cssslp_retry_again:
+	; If we fall to this label, go back to the beginning after 1s
+	sleep_ts 10
+	RJMP comm_slave_send_shooting_launch_packet
+
+
+comm_slave_receive_shooting_launch_packet:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function receives a Shooting Launch packet with the coordinate 
+	; of the shot executed by the master (waits for SR request).
+	; NOTE: this function uses: R16, R17
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	; Wait and get the Ships Ready packet from the master
+	RCALL i2c_slave_receive_packet
+
+	; The function i2c_slave_receive_packet returns 0x00 in R15 if success.
+	CLR R16
+	CP R15, R16
+	BRNE csrslp_retry_again				; Retry after 0.1s if something was wrong
+	
+	; Here, the master transmitted something to the slave
+
+	LDI R16, MASTER_SHOT_LAUNCH_ID		; Expected Packet ID
+	CPSE R10, R16						; R10 is the first packet byte (packet ID)
+	RJMP comm_unexpected_packet_id		; Fall to comm_unexpected_packet_id if R10 != R16
+	
+	; React on this shot
+	RCALL game_enemy_fired_position
+
+	RET
+	
+	csrslp_retry_again:
+	; If we fall to this label, go back to the beginning after 1s
+	sleep_ts 10
+	RJMP comm_slave_receive_shooting_launch_packet
 
 
 

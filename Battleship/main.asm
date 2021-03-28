@@ -80,13 +80,14 @@ JMP Timer0OverflowInterrupt
 .INCLUDE "Timer1Mux.inc"
 .INCLUDE "Sleep.inc"
 .INCLUDE "CoreI2C.inc"
-.INCLUDE "Communication.inc"
 .INCLUDE "Buzzer.inc"
 .INCLUDE "Screen.inc"
 .INCLUDE "ScreenDrawings.inc"
-.INCLUDE "Game.inc"
+.INCLUDE "GameState.inc"
 .INCLUDE "GameMaps.inc"
 .INCLUDE "Cursor.inc"
+.INCLUDE "Game.inc"
+.INCLUDE "Communication.inc"
 .INCLUDE "Placement.inc"
 .INCLUDE "Keyboard.inc"
 .INCLUDE "Animations.inc"
@@ -139,8 +140,8 @@ init_ships_placement:
 	RCALL screen_clear
 	RCALL draw_boards
 
-	; If player 2 is selected (SLAVE), call comm_slave_ship_placement_prepare
-	player_2_rcall comm_slave_ship_placement_prepare
+	; If player 2 is selected (SLAVE), call comm_slave_exchange_prepare to start listening I2C
+	player_2_rcall comm_slave_exchange_prepare
 
 	; Start ship placement
 	RCALL start_ship_placement
@@ -173,28 +174,22 @@ init_main_game:
 	game_change_state GS_MAIN_GAME
 
 	; Update the game maps
-	RCALL update_game_maps
+	CALL update_game_maps
+
+	; Configure the interface for the game
+	RCALL game_init_interface
 
 	;
 	; The first player to play is Player 1 (I2C master)
 	;
-
-
+	
+	; If selected player is Player 1 (MASTER), call game_play_turn.
+	player_1_rcall game_play_turn
+	
+	; If selected player is Player 1 (MASTER), send the Shooting Launch packet to slave.
+	; If player 2 is selected (SLAVE), wait and receive the Shooting Launch packet from master.
+	selected_player_rcall comm_master_send_shooting_launch_packet, comm_slave_receive_shooting_launch_packet
 
 main:
-	; Mask to uncheck the bit 4 of the animation counter
-	LDI R16, 0b11101111
-
-	; Check if "5 Hz interrupt flag" is set
-	SBRC R9, 4
-	RJMP refresh_test
 
 	RJMP main
-
-	refresh_test:
-		AND R9, R16
-
-		; Update the game maps (without clearing the whole maps)
-		RCALL screen_set_PCS_ships
-
-		RJMP main

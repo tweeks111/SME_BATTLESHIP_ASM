@@ -381,3 +381,6 @@ Sound_PlacementAccepted:
 	; Placement Accepted sound
 	.db _SOL_3, 1, _DO_4, 1, 0, 0
 		
+Sound_FiringRefused:
+	; Firing Refused sound
+	.db _DO_2, 1, _DO_2, 1, 0, 0

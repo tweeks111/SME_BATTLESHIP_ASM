@@ -55,28 +55,61 @@ init_map_cells:
 		BRNE imc_ECS_loop
 
 	RET
-
+	
+;TODO: create a function to redraw only one map at a time
 update_game_maps:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function updates the game maps (left and right)
+	; This function updates the game maps
 	; NOTE: this function uses: R16, R17, R18, R19, R20, R21
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
 	; Draw two rectangles to clear the two game maps
 	draw_rect 2, 2, 0, 10, 10
-	draw_rect 29, 2, 0, 10, 10
+	draw_rect 28, 2, 0, 10, 10
 
 	; Re-draw the PCS
 	RCALL screen_set_PCS_ships
+	
+	; Re-draw the ECS
+	RCALL screen_set_ECS_ships
 
 	; Re-draw the cursor
 	RCALL screen_set_cursor
 	RET
 
+animate_game_maps:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function updates the screen according to the cells status in 
+	; PCS and ECS and to the animation counter. It should be called the
+	; most regularily and often as possible.
+	; Note: this function changes: R16, R17, R18, R19, R20, R21
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	; Mask to uncheck the bit 4 of the animation counter
+	LDI R16, 0b11101111
+
+	; Check if "5 Hz interrupt flag" is set
+	SBRS R9, 4
+	RJMP agm_end
+
+		; This section runs at max 5 Hz
+
+		; Apply the mask to the animation counter to unset the "5 Hz interrupt flag"
+		AND R9, R16
+	
+		; Update the game maps (without clearing the whole maps)
+		RCALL screen_set_PCS_ships
+		RCALL screen_set_ECS_ships
+		
+		; Re-draw the cursor (must be drawn last to be on the foreground)
+		RCALL screen_set_cursor
+	agm_end:
+	RET
+
 screen_set_PCS_ships:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function translates the current cells state from PCS to the 
-	; screen (only for PCS_HEALTY_SHIP, other states are animated).
+	; screen.
 	; Note: this function changes: R16, R17, R18, R19, R20, R21
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	LDI ZH, high(PCS_ADDR)
@@ -88,33 +121,33 @@ screen_set_PCS_ships:
 
 	; Loop over the Y position
 	LDI R21, 0
-	ss_Y_loop:
+	ssps_Y_loop:
 		; Loop over the X position
 		LDI R20, 0
-		ss_X_loop:
+		ssps_X_loop:
 			; Get the cell state for this position
 			LD R16, Z+
 
 			SBRC R16, PCS_HEALTY_SHIP
-			RJMP ss_draw_healty_ship_point		; If this cell is a healty part of a ship
+			RJMP ssps_draw_healty_ship_point		; If this cell is a healty part of a ship
 
 			SBRC R16, PCS_HITTED_SHIP
-			RJMP ss_draw_hitted_ship_point		; If this cell is a hitted part of a ship
+			RJMP ssps_draw_hitted_ship_point		; If this cell is a hitted part of a ship
 
 			SBRC R16, PCS_SUNK_SHIP
-			RJMP ss_draw_sunk_ship_point		; If this cell is part of a sunk ship
+			RJMP ssps_draw_sunk_ship_point			; If this cell is part of a sunk ship
 
-			ss_X_loop_end:
+			ssps_X_loop_end:
 			INC R20
 			CPI R20, 10
-			BRNE ss_X_loop
+			BRNE ssps_X_loop
 
 		INC R21
 		CPI R21, 10
-		BRNE ss_Y_loop
+		BRNE ssps_Y_loop
 	RET
 
-	ss_draw_healty_ship_point:
+	ssps_draw_healty_ship_point:
 		; The brightness for a PCS_HEALTY_SHIP cell depends on the current 
 		; game state (low brightness when placing ships, high brightness else).
 		LDI R16, 3						; Default brightness = maximum brightness
@@ -136,9 +169,9 @@ screen_set_PCS_ships:
 		; Draw the point on the screen
 		RCALL screen_set_hline
 
-		RJMP ss_X_loop_end
+		RJMP ssps_X_loop_end
 		
-	ss_draw_hitted_ship_point:
+	ssps_draw_hitted_ship_point:
 		; Hitted parts of ships are blinking at 2.5 Hz
 		; We use the animation counter to determine if we are in ON or OFF state
 		LDI R16, 3						; Blink from max to min brightness
@@ -157,9 +190,9 @@ screen_set_PCS_ships:
 		; Draw the point on the screen
 		RCALL screen_set_hline
 
-		RJMP ss_X_loop_end
+		RJMP ssps_X_loop_end
 		
-	ss_draw_sunk_ship_point:
+	ssps_draw_sunk_ship_point:
 		; Sunk of ships are blinking at 1.25 Hz
 		; We use the animation counter to determine if we are in ON or OFF state
 		LDI R16, 3						; Blink from max to min brightness
@@ -178,7 +211,110 @@ screen_set_PCS_ships:
 		; Draw the point on the screen
 		RCALL screen_set_hline
 
-		RJMP ss_X_loop_end
+		RJMP ssps_X_loop_end
+		
+		
+screen_set_ECS_ships:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function translates the current cells state from ECS to the 
+	; screen.
+	; Note: this function changes: R16, R17, R18, R19, R20, R21
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	LDI ZH, high(ECS_ADDR)
+	LDI ZL, low(ECS_ADDR)
+
+	; Store parameters for the function screen_set_hline
+	LDI R16, 1
+	MOV R13, R16					; Line length = 1 (point)
+
+	; Loop over the Y position
+	LDI R21, 0
+	sses_Y_loop:
+		; Loop over the X position
+		LDI R20, 0
+		sses_X_loop:
+			; Get the cell state for this position
+			LD R16, Z+
+
+			SBRC R16, ECS_MISSED_SHOT
+			RJMP sses_draw_missed_shot_point		; If this cell is a healty part of a ship
+
+			SBRC R16, ECS_HITTED_SHIP
+			RJMP sses_draw_hitted_ship_point		; If this cell is a hitted part of a ship
+
+			SBRC R16, ECS_SUNK_SHIP
+			RJMP sses_draw_sunk_ship_point			; If this cell is part of a sunk ship
+
+			sses_X_loop_end:
+			INC R20
+			CPI R20, 10
+			BRNE sses_X_loop
+
+		INC R21
+		CPI R21, 10
+		BRNE sses_Y_loop
+	RET
+
+	sses_draw_missed_shot_point:
+		LDI R16, 1
+		MOV R12, R16					; Brightness = minimum for missed shots
+
+		; Add the map's offset of 28 pixels X and 2 pixels Y
+		LDI R16, 28
+		MOV R10, R20
+		ADD R10, R16					; Add offset of 29 to X
+		LDI R16, 2
+		MOV R11, R21
+		ADD R11, R16					; Add offset of 2 to Y
+
+		; Draw the point on the screen
+		RCALL screen_set_hline
+
+		RJMP sses_X_loop_end
+		
+	sses_draw_hitted_ship_point:
+		; Hitted parts of ships are blinking at 2.5 Hz
+		; We use the animation counter to determine if we are in ON or OFF state
+		LDI R16, 3						; Blink from max to min brightness
+		SBRC R9, 2						; Skip next instruction if Bit2 of animation counter cleared (to divide frequency by 4)
+			LDI R16, 1					; Min brightness
+			
+		MOV R12, R16					; Brightness
+		
+		; Add the map's offset of 28 pixels X and 2 pixels Y
+		LDI R16, 28
+		MOV R10, R20
+		ADD R10, R16					; Add offset of 29 to X
+		LDI R16, 2
+		MOV R11, R21
+		ADD R11, R16					; Add offset of 2 to Y
+
+		; Draw the point on the screen
+		RCALL screen_set_hline
+
+		RJMP sses_X_loop_end
+		
+	sses_draw_sunk_ship_point:
+		; Sunk of ships are blinking at 1.25 Hz
+		; We use the animation counter to determine if we are in ON or OFF state
+		LDI R16, 3						; Blink from max to min brightness
+		SBRC R9, 3						; Skip next instruction if Bit2 of animation counter cleared (to divide frequency by 8)
+			LDI R16, 0					; LED off
+			
+		MOV R12, R16					; Brightness
+		
+		; Add the map's offset of 28 pixels X and 2 pixels Y
+		LDI R16, 28
+		MOV R10, R20
+		ADD R10, R16					; Add offset of 29 to X
+		LDI R16, 2
+		MOV R11, R21
+		ADD R11, R16					; Add offset of 2 to Y
+
+		; Draw the point on the screen
+		RCALL screen_set_hline
+
+		RJMP sses_X_loop_end
 		
 	
 set_rect_game_map:

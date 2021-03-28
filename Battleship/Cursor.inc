@@ -15,6 +15,19 @@
 #define CURSOR_AREA_ADDR	0x019A
 
 
+.macro get_cursor_position
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This macro returns the cursor's position in R11 and R12 (X, Y).
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; Set Y-pointer to the cursor's data byte in SRAM
+	LDI YH,high(CURSOR_ADDR)
+	LDI YL,low(CURSOR_ADDR)
+
+	LD R11, Y+		; Position X
+	LD R12, Y		; Position Y
+.endmacro
+
 set_cursor_area:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function sets the cursor's area.
