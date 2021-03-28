@@ -56,7 +56,7 @@ Timer1OverflowInterrupt:
 
 	RCALL SleepInterruptRoutine
 	RCALL SoundsInterruptRoutine
-	RCALL AnimationsInterruptRoutine
+	CALL AnimationsInterruptRoutine
 	
 	; Restore status register from the stack	
 	POP R25

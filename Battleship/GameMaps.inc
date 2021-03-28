@@ -68,10 +68,10 @@ update_game_maps:
 	draw_rect 28, 2, 0, 10, 10
 
 	; Re-draw the PCS
-	RCALL screen_set_PCS_ships
+	RCALL screen_set_PCS_map
 	
 	; Re-draw the ECS
-	RCALL screen_set_ECS_ships
+	RCALL screen_set_ECS_map
 
 	; Re-draw the cursor
 	RCALL screen_set_cursor
@@ -98,15 +98,15 @@ animate_game_maps:
 		AND R9, R16
 	
 		; Update the game maps (without clearing the whole maps)
-		RCALL screen_set_PCS_ships
-		RCALL screen_set_ECS_ships
+		RCALL screen_set_PCS_map
+		RCALL screen_set_ECS_map
 		
 		; Re-draw the cursor (must be drawn last to be on the foreground)
 		RCALL screen_set_cursor
 	agm_end:
 	RET
 
-screen_set_PCS_ships:
+screen_set_PCS_map:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function translates the current cells state from PCS to the 
 	; screen.
@@ -195,7 +195,7 @@ screen_set_PCS_ships:
 	ssps_draw_sunk_ship_point:
 		; Sunk of ships are blinking at 1.25 Hz
 		; We use the animation counter to determine if we are in ON or OFF state
-		LDI R16, 3						; Blink from max to min brightness
+		LDI R16, 1						; Blink from min to zero brightness
 		SBRC R9, 3						; Skip next instruction if Bit2 of animation counter cleared (to divide frequency by 8)
 			LDI R16, 0					; LED off
 			
@@ -214,7 +214,7 @@ screen_set_PCS_ships:
 		RJMP ssps_X_loop_end
 		
 		
-screen_set_ECS_ships:
+screen_set_ECS_map:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function translates the current cells state from ECS to the 
 	; screen.
@@ -262,7 +262,7 @@ screen_set_ECS_ships:
 		; Add the map's offset of 28 pixels X and 2 pixels Y
 		LDI R16, 28
 		MOV R10, R20
-		ADD R10, R16					; Add offset of 29 to X
+		ADD R10, R16					; Add offset of 28 to X
 		LDI R16, 2
 		MOV R11, R21
 		ADD R11, R16					; Add offset of 2 to Y
@@ -284,7 +284,7 @@ screen_set_ECS_ships:
 		; Add the map's offset of 28 pixels X and 2 pixels Y
 		LDI R16, 28
 		MOV R10, R20
-		ADD R10, R16					; Add offset of 29 to X
+		ADD R10, R16					; Add offset of 28 to X
 		LDI R16, 2
 		MOV R11, R21
 		ADD R11, R16					; Add offset of 2 to Y
@@ -297,7 +297,7 @@ screen_set_ECS_ships:
 	sses_draw_sunk_ship_point:
 		; Sunk of ships are blinking at 1.25 Hz
 		; We use the animation counter to determine if we are in ON or OFF state
-		LDI R16, 3						; Blink from max to min brightness
+		LDI R16, 1						; Blink from min to zero brightness
 		SBRC R9, 3						; Skip next instruction if Bit2 of animation counter cleared (to divide frequency by 8)
 			LDI R16, 0					; LED off
 			
@@ -306,7 +306,7 @@ screen_set_ECS_ships:
 		; Add the map's offset of 28 pixels X and 2 pixels Y
 		LDI R16, 28
 		MOV R10, R20
-		ADD R10, R16					; Add offset of 29 to X
+		ADD R10, R16					; Add offset of 28 to X
 		LDI R16, 2
 		MOV R11, R21
 		ADD R11, R16					; Add offset of 2 to Y

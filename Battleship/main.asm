@@ -86,19 +86,15 @@ JMP Timer0OverflowInterrupt
 .INCLUDE "GameState.inc"
 .INCLUDE "GameMaps.inc"
 .INCLUDE "Cursor.inc"
-.INCLUDE "Game.inc"
 .INCLUDE "Communication.inc"
+.INCLUDE "PlayerSelect.inc"
 .INCLUDE "Placement.inc"
+.INCLUDE "Game.inc"
 .INCLUDE "Keyboard.inc"
 .INCLUDE "Animations.inc"
-.INCLUDE "PlayerSelect.inc"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 init:
-	; Configure output pin PC3 (LED BOTTOM)
-	SBI DDRC,3			; Pin PC3 is an output
-	SBI PORTC,3			; Output Vcc => Off
-
 	; Initialize components
     CALL screen_init
 	CALL timer1_mux_init
@@ -111,6 +107,9 @@ init:
 
 	; Initialize player's ships list
 	RCALL init_ships_list
+
+	; Initialize the sunk enemy ships list
+	RCALL game_init_enemy_ships_list
 
 	; Clear the screen
 	RCALL screen_clear
@@ -182,14 +181,69 @@ init_main_game:
 	;
 	; The first player to play is Player 1 (I2C master)
 	;
+
+	main_game_turns_loop:
+		;
+		; Now, it's the turn for Player 1 to play
+		;
+
+		; If selected player is Player 1 (MASTER), call game_play_turn.
+		player_1_rcall game_play_turn
+
+		; If selected player is Player 1 (MASTER), send the Shooting Launch packet to slave.
+		; If player 2 is selected (SLAVE), wait and receive the Shooting Launch packet from master.
+		selected_player_rcall comm_master_send_shooting_launch_packet, comm_slave_receive_shooting_launch_packet
 	
-	; If selected player is Player 1 (MASTER), call game_play_turn.
-	player_1_rcall game_play_turn
-	
-	; If selected player is Player 1 (MASTER), send the Shooting Launch packet to slave.
-	; If player 2 is selected (SLAVE), wait and receive the Shooting Launch packet from master.
-	selected_player_rcall comm_master_send_shooting_launch_packet, comm_slave_receive_shooting_launch_packet
+		; Update the game maps
+		RCALL update_game_maps
+
+		; Get the game state and check if the game has been won
+		game_get_state
+		SBRC R10, GS_GAME_WON
+			RJMP game_won
+		SBRC R10, GS_GAME_LOST
+			RJMP game_lost
+
+		;
+		; Now, it's the turn for Player 2 to play
+		;
+		
+		; If player 2 is selected (SLAVE), call comm_slave_exchange_prepare to start listening I2C
+		player_2_rcall comm_slave_exchange_prepare
+
+		; If selected player is Player 2 (SLAVE), call game_play_turn.
+		player_2_rcall game_play_turn
+
+		; If selected player is Player 1 (MASTER), receive the Shooting Launch packet from slave. 
+		; If player 2 is selected (SLAVE), wait ST and send the Shooting Launch packet to master.
+		selected_player_rcall comm_master_receive_shooting_launch_packet, comm_slave_send_shooting_launch_packet
+		
+		; Update the game maps
+		RCALL update_game_maps
+
+		; Get the game state and check if the game has been won or lost
+		game_get_state
+		SBRC R10, GS_GAME_WON
+			RJMP game_won
+		SBRC R10, GS_GAME_LOST
+			RJMP game_lost
+
+		RJMP main_game_turns_loop
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+game_won:
+		CBI PORTC, 2
+
+		RJMP main
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+game_lost:
+		CBI PORTC, 3
+
+		RJMP main
 
 main:
+
+	RCALL animate_game_maps
 
 	RJMP main

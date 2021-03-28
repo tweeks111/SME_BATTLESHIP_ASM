@@ -280,6 +280,22 @@ i2c_wait_int_flag:
 	RET
 
 
+i2c_wait_stop_cond:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function suspends the execution until the stop condition has 
+	; been completely sent.
+	; NOTE: this function changes: R16
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	i2c_wsc_loop:
+		LDS R16, TWCR
+		SBRC R16, TWSTO
+		RJMP i2c_wsc_loop
+
+	RET
+	
+
+
 i2c_master_transmit_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function transmits a packet (5 bytes) in the I²C bus.
@@ -349,6 +365,9 @@ i2c_master_transmit_packet:
 	;
 	; Send stop condition
 	i2c_master_stop_cond
+
+	; Wait for stop condition completed
+	RCALL i2c_wait_stop_cond
 	
 	; Clear R15 to indicate Success exit status
 	CLR R15
@@ -378,7 +397,7 @@ i2c_master_receive_packet:
 	; The exit status is written in R15 (0x00 if succes, 0xFF if error).
 	; NOTE: this function modifies: R16, R17
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+	
 	; Reset the error LED
 	SBI PORTC,3
 
@@ -449,6 +468,9 @@ i2c_master_receive_packet:
 	;
 	; Send STOP condition
 	i2c_master_stop_cond
+
+	; Wait for stop condition completed
+	RCALL i2c_wait_stop_cond
 	
 	; Clear R15 to indicate Success exit status
 	CLR R15

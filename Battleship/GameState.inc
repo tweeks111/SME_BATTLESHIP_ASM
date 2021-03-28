@@ -14,6 +14,8 @@
 #define GS_DISCOVERY		1
 #define GS_SHIPS_PLACEMENT	2
 #define GS_MAIN_GAME		3
+#define GS_GAME_WON			4
+#define GS_GAME_LOST		5
 
 ; Game state byte address in SRAM
 #define GAME_STATE_ADDR		0x0192
