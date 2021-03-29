@@ -240,6 +240,8 @@ init_main_game:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 game_won:
+	sleep_ts 10
+
 	; Play winner sound
 	buzzer_sound_async Sound_Winner
 	
@@ -253,6 +255,8 @@ game_won:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 game_lost:
+	sleep_ts 10
+
 	; Play looser sound
 	buzzer_sound_async Sound_Looser
 	
