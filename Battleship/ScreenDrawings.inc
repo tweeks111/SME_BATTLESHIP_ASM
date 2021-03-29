@@ -26,7 +26,7 @@
 	draw_word 2, 4, 3, WordEnemyShot
 .endmacro
 
-.macro draw_miss
+.macro draw_missed
 	draw_rect 6, 2, @0, 1 , 9
 	draw_rect 32, 2, @0, 1 , 9
 	draw_line 6, 2, @0, 27
@@ -102,36 +102,3 @@ draw_boards:
 	draw_left_board 2
 	draw_right_board 2
 	RET
-
-WordPlayer1:
-	.db _P, _L, _A, _Y, _E, _R, _SMALL_SPACE, 1, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
-	
-WordPlayer2:
-	.db _P, _L, _A, _Y, _E, _R, _SMALL_SPACE, 2, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
-	
-WordBattleship:
-	.db _B, _A, _T, _T, _L, _E, _S, _H, _I, _P, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
-	
-WordWaitingFor:
-	.db _W, _A, _T, _I, _N, _G, _SMALL_SPACE, _F, _O, _R, _WORD_END, 0
-
-WordMissed:
-	.db _M, _I, _S, _S, _E, _D, _WORD_END, 0
-	
-WordHit:
-	.db _H, _I, _T, _EXC, _WORD_END, 0
-	
-WordSunk:
-	.db _S, _U, _N, _K, _EXC, _WORD_END
-	
-WordGo:
-	.db _G, _O, _EXC, _WORD_END
-	
-WordEnemyShot:
-	.db _E, _N, _E, _M, _Y, _SMALL_SPACE, _S, _H, _O, _T, _WORD_END, 0
-	
-WordYouWon:
-	.db _Y, _O, _U, _SPACE, _W, _O, _N, _EXC, _WORD_END, 0
-
-WordYouLost:
-	.db _Y, _O, _U, _SPACE, _L, _O, _S, _T, _EXC, _WORD_END

@@ -77,6 +77,9 @@ JMP Timer1OverflowInterrupt
 JMP Timer0OverflowInterrupt
 
 
+; Prepend the Program Memory tables at the beginning
+.INCLUDE "ProgMemTables.inc"
+
 .INCLUDE "Timer1Mux.inc"
 .INCLUDE "Sleep.inc"
 .INCLUDE "CoreI2C.inc"
@@ -177,7 +180,7 @@ init_main_game:
 	game_change_state GS_MAIN_GAME
 
 	; Update the game maps
-	CALL update_game_maps
+	RCALL update_game_maps
 
 	; Configure the interface for the game
 	RCALL game_init_interface
@@ -190,6 +193,9 @@ init_main_game:
 		;
 		; Now, it's the turn for Player 1 to play
 		;
+		; If player 2 is selected (SLAVE), call comm_slave_exchange_prepare to start listening I2C
+		player_2_rcall comm_slave_exchange_prepare
+
 		; Show a notify ("Go" for player 1, "Enemy shot" for player 2)
 		selected_player_rcall game_notify_go, game_notify_enemy_shot
 
@@ -200,9 +206,6 @@ init_main_game:
 		; If player 2 is selected (SLAVE), wait and receive the Shooting Launch packet from master.
 		selected_player_rcall comm_master_send_shooting_launch_packet, comm_slave_receive_shooting_launch_packet
 	
-		; Update the game maps
-		RCALL update_game_maps
-
 		; Get the game state and check if the game has been won
 		game_get_state
 		SBRC R10, GS_GAME_WON
@@ -213,12 +216,12 @@ init_main_game:
 		;
 		; Now, it's the turn for Player 2 to play
 		;
-		; Show a notify ("Go" for player 2, "Enemy shot" for player 1)
-		selected_player_rcall game_notify_enemy_shot, game_notify_go
-		
 		; If player 2 is selected (SLAVE), call comm_slave_exchange_prepare to start listening I2C
 		player_2_rcall comm_slave_exchange_prepare
 
+		; Show a notify ("Go" for player 2, "Enemy shot" for player 1)
+		selected_player_rcall game_notify_enemy_shot, game_notify_go
+		
 		; If selected player is Player 2 (SLAVE), call game_play_turn.
 		player_2_rcall game_play_turn
 
@@ -226,9 +229,6 @@ init_main_game:
 		; If player 2 is selected (SLAVE), wait ST and send the Shooting Launch packet to master.
 		selected_player_rcall comm_master_receive_shooting_launch_packet, comm_slave_send_shooting_launch_packet
 		
-		; Update the game maps
-		RCALL update_game_maps
-
 		; Get the game state and check if the game has been won or lost
 		game_get_state
 		SBRC R10, GS_GAME_WON

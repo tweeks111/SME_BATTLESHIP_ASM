@@ -119,6 +119,9 @@
     <Compile Include="PlayerSelect.inc">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ProgMemTables.inc">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Screen.inc">
       <SubType>Code</SubType>
     </Compile>

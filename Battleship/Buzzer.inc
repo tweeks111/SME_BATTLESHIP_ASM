@@ -9,47 +9,6 @@
 ; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
-; Tones frequencies -> TCNT value for prescaler 256 (see Excel document)
-#define _SI_1	3
-#define _DO_2	17
-#define _REb_2	31
-#define _RE_2	43
-#define _MIb_2	55
-#define _MI_2	66
-#define _FA_2	77
-#define _SOLb_2	87
-#define _SOL_2	97
-#define _LAb_2	106
-#define _LA_2	114
-#define _SIb_2	122
-#define _SI_2	129
-#define _DO_3	137
-#define _REb_3	143
-#define _RE_3	150
-#define _MIb_3	156
-#define _MI_3	161
-#define _FA_3	167
-#define _SOLb_3	172
-#define _SOL_3	176
-#define _LAb_3	181
-#define _LA_3	185
-#define _SIb_3	189
-#define _SI_3	193
-#define _DO_4	196
-#define _REb_4	200
-#define _RE_4	203
-#define _MIb_4	206
-#define _MI_4	209
-#define _FA_4	211
-#define _SOLb_4	214
-#define _SOL_4	216
-#define _LAb_4	218
-#define _LA_4	220
-#define _SIb_4	222
-#define _SI_4	224
-
-#define _SHUSH	255		; Silence
-
 #define SOUND_COUNTER_ADDR 0x01C0
 
 
@@ -340,47 +299,4 @@ buzzer_sound_reg:
 	RET
 */
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; SOUND TABLES
-; NOTE: each sound table must end with two zero-bytes
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-Sound_Test:
-	; Test sound
-	.db _DO_3, 2,  _RE_3, 2,  _MI_3, 2,  _DO_3, 2,  _RE_3, 2, _SHUSH, 2,	\
-		_RE_3, 2,  _MI_3, 2,  _FA_3, 2,  _SHUSH, 2,							\
-		_FA_3, 2,  _SHUSH, 2,												\
-		_MI_3, 2,  _SHUSH, 2,												\
-		_MI_3, 2,  _SHUSH, 2,												\
-		_DO_3, 2,  _RE_3, 2,  _MI_3, 2,  _DO_3, 2,  _RE_3, 2, _SHUSH, 2,	\
-		_RE_3, 2,  _MI_3, 2,  _FA_3, 2,  _SHUSH, 2,							\
-		_SOL_3, 2, _SHUSH, 2,												\
-		_DO_3, 2,  _SHUSH, 2, 0, 0
-		
-Sound_Intro:
-	; Intro sound
-	.db _SOL_3, 2, _SHUSH, 1, _SOL_3, 1, _DO_4, 5, _SHUSH, 1, _DO_3, 1, _DO_3, 1, _DO_3, 2, 0, 0
-
-Sound_Intro_Long:
-	; Long Intro sound
-	.db _SOL_3, 2, _SHUSH, 1, _SOL_3, 1, _DO_4, 5, _SHUSH, 1, _SOL_3, 2,  _RE_4, 3,  _SHUSH, 1,						\
-		_DO_4, 2,  _SHUSH, 1, _SI_3, 1,  _DO_4, 4, _SHUSH, 1,  _DO_3, 2,  _SHUSH, 1, _DO_3, 1, _DO_3, 2, 0, 0
-
-Sound_Winner:
-	; Winner sound
-	.db _SOL_3, 1, _SOL_3, 1, _SOL_3, 2, _SOL_3, 2, _DO_4, 2, _SOL_3, 2, _DO_4, 4, 0, 0
 	
-Sound_Looser:
-	; Looser sound
-	.db _LA_3, 2, _LAb_3, 2, _SOL_3, 2, _SOLb_3, 2, _FA_3, 8, 0, 0
-		
-Sound_PlacementRefused:
-	; Placement Refused sound
-	.db _DO_2, 1, _DO_2, 1, 0, 0
-		
-Sound_PlacementAccepted:
-	; Placement Accepted sound
-	.db _SOL_3, 1, _DO_4, 1, 0, 0
-		
-Sound_FiringRefused:
-	; Firing Refused sound
-	.db _DO_2, 1, _DO_2, 1, 0, 0

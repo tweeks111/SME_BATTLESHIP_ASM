@@ -456,7 +456,7 @@ comm_slave_receive_shooting_launch_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 	; Wait and get the Ships Ready packet from the master
-	RCALL i2c_slave_receive_packet
+	RCALL i2c_slave_receive_packet_no_listening
 
 	; The function i2c_slave_receive_packet returns 0x00 in R15 if success.
 	CLR R16

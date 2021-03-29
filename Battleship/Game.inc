@@ -139,8 +139,11 @@ game_fire:
 	; Set Shooting Status to 1
 	LDI R16, 1
 	ST Y, R16
+	
+	; Play Fire Launch sound
+	buzzer_sound_async Sound_FireLaunch
 
-	sleep_ts 4
+	sleep_ts 8
 
 	RET
 
@@ -395,6 +398,12 @@ game_enemy_shot_missed:
 	; Send the Shot Splash answer to the enemy
 	; Call master send for Player 1, slave send for Player 2
 	selected_player_rcall comm_master_send_shot_splash_packet, comm_slave_send_shot_splash_packet
+	
+	; Play Shot Enemy Missed sound
+	buzzer_sound_async Sound_ShotEnemyMissed
+
+	; Show a "Missed" notify on the screen
+	RCALL game_notify_shot_missed
 
 	RET
 
@@ -421,6 +430,12 @@ game_enemy_shot_hitted:
 	LDI R16, (1 << PCS_HITTED_SHIP)
 	MOV R14, R16				; Cell state = HITTED_SHIP
 	RCALL set_rect_pcs
+	
+	; Play Shot Enemy Hit sound	
+	buzzer_sound_async Sound_ShotEnemyHit
+
+	; Show a "Hit" notify on the screen
+	RCALL game_notify_shot_hit
 
 	RET
 
@@ -488,6 +503,12 @@ game_enemy_shot_sunk:
 		game_change_state GS_GAME_LOST
 	
 	gess_game_not_lost:
+	
+	; Play Shot Enemy Sunk sound
+	buzzer_sound_async Sound_ShotEnemySunk
+
+	; Show a "Sunk" notify on the screen
+	RCALL game_notify_shot_sunk
 
 	RET
 
@@ -511,6 +532,12 @@ game_shot_result_splash:
 	LDI R16, (1 << ECS_MISSED_SHOT)
 	MOV R14, R16				; Cell state = MISSED_SHOT
 	RCALL set_rect_ecs
+	
+	; Play Shot Missed sound
+	buzzer_sound_async Sound_ShotMissed
+
+	; Show a "Missed" notify on the screen
+	RCALL game_notify_shot_missed
 
 	RET
 
@@ -534,6 +561,12 @@ game_shot_result_hitted:
 	LDI R16, (1 << ECS_HITTED_SHIP)
 	MOV R14, R16				; Cell state = HITTED_SHIP
 	RCALL set_rect_ecs
+	
+	; Play Shot Hit sound
+	buzzer_sound_async Sound_ShotHit
+
+	; Show a "Hit" notify on the screen
+	RCALL game_notify_shot_hit
 
 	RET
 
@@ -579,6 +612,12 @@ game_shot_result_sunk:
 	LDI R16, (1 << ECS_SUNK_SHIP)
 	MOV R14, R16				; Cells state = SUNK_SHIP
 	RCALL set_rect_ecs
+
+	; Play Shot Sunk sound
+	buzzer_sound_async Sound_ShotSunk
+
+	; Show a "Sunk" notify on the screen
+	RCALL game_notify_shot_sunk
 
 	RET
 
