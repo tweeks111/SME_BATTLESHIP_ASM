@@ -57,6 +57,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; SOUND TABLES
+; Each tone is represented by two bytes (frequency and duration [10th of second])
 ; NOTE: each sound table must end with two zero-bytes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Sound_Test:
@@ -127,6 +128,10 @@ Sound_ShotEnemyHit:
 Sound_ShotEnemySunk:
 	; Shot Enemy Sunk sound
 	.db _SOL_2, 2, _SHUSH, 2, _SOL_2, 2, _DO_3, 4, _SHUSH, 2, _DO_2, 4, 0, 0
+
+Sound_PlayersConnected:
+	; Shot Players Connected sound
+	.db _DO_4, 1, _DO_4, 2, 0, 0
 
 	
 

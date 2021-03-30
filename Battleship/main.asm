@@ -126,8 +126,10 @@ init_intro:
 	; Clear the screen
 	RCALL screen_clear
 
-	; Write the game's Home Screen
+	; Play game intro sound (long version)
 	buzzer_sound_async Sound_Intro_Long
+
+	; Write the game's Home Screen
 	draw_title 3
 	RCALL anim_intro
 
@@ -138,6 +140,9 @@ init_intro:
 init_ships_placement:
 	; Set current game state to SHIPS_PLACEMENT
 	game_change_state GS_SHIPS_PLACEMENT
+	
+	; Play a game sound when both players are connected
+	buzzer_sound_async Sound_PlayersConnected
 
 	; Draw the boards
 	RCALL screen_clear
@@ -178,6 +183,12 @@ init_ships_placement:
 init_main_game:
 	; Set current game state to GS_MAIN_GAME
 	game_change_state GS_MAIN_GAME
+
+	; Delay to avoid sounds overlapping
+	sleep_ts 4
+
+	; Play game intro sound (short version)
+	buzzer_sound_async Sound_Intro
 
 	; Update the game maps
 	RCALL update_game_maps
@@ -269,6 +280,7 @@ game_lost:
 	RJMP main
 
 main:
-	;RCALL animate_game_maps
+	; Listen to keyboard (if user wants to start a new game, press C)
+	RCALL keyboard_listen
 
 	RJMP main
