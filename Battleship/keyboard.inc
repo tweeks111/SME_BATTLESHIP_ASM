@@ -8,20 +8,16 @@
 ; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
-#define KEYBOARD_STATE_ADDR 0x0190
+#define KBDSTAT	0x0190
 
 // MACROS
 
 // FUNCTIONS
 
 keyboard_init:
-	; Place the Y-pointer on the "keyboard pressed state" byte
-	LDI YH, high(KEYBOARD_STATE_ADDR)
-	LDI YL, low(KEYBOARD_STATE_ADDR)
-		
 	; Initialize the keyboard pressed state to 0
 	CLR R16
-	ST Y,R16
+	STS KBDSTAT, R16
 
 	RET
 
@@ -168,18 +164,14 @@ keyboard_listen:
 		; If nothing pressed
 
 		; Reset the keyboard pressed status to 0
-		LDI YH, high(KEYBOARD_STATE_ADDR)
-		LDI YL, low(KEYBOARD_STATE_ADDR)
 		CLR R17
-		ST Y,R17
+		STS KBDSTAT, R17
 
 		RET
 
 	KeyboardPressedEnd:
 		; At the end of a keyboard pressed action
-		LDI YH, high(KEYBOARD_STATE_ADDR)
-		LDI YL, low(KEYBOARD_STATE_ADDR)
-		LD R17,Y							; Get the current keyboard status from SRAM
+		LDS R17, KBDSTAT					; Get the current keyboard status from SRAM
 		CPI R17,1
 		BRNE kpe_long_sleep
 			sleep_ts 1
@@ -192,7 +184,7 @@ keyboard_listen:
 		
 		; If the keyboard was previously released -> mark it as pressed now
 		LDI R17,1
-		ST Y,R17
+		STS KBDSTAT, R17
 
 		RET
 

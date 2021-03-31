@@ -357,8 +357,14 @@ comm_master_receive_shooting_launch_packet:
 	; NOTE: this function uses: R16, R17, R18, R19
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
+	; Initialize I2C reception
+	RCALL i2c_master_receive_init
+
+	; Wait for packet reception while running screen's animation
+	RCALL comm_wait_int_flag_anim
+
 	; Wait for the slave to transmit a Shooting Launch packet
-	RCALL i2c_master_receive_packet
+	RCALL i2c_master_receive_packet_no_sla
 	
 	; The function i2c_master_receive_packet returns 0x00 in R15 if success.
 	CLR R16
@@ -455,7 +461,10 @@ comm_slave_receive_shooting_launch_packet:
 	; NOTE: this function uses: R16, R17, R18, R19
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-	; Wait and get the Ships Ready packet from the master
+	; Wait for packet reception while running screen's animation
+	RCALL comm_wait_int_flag_anim
+
+	; Get the Ships Ready packet from the master
 	RCALL i2c_slave_receive_packet_no_listening
 
 	; The function i2c_slave_receive_packet returns 0x00 in R15 if success.
@@ -598,5 +607,24 @@ comm_slave_send_shot_sank_packet:
 	; R13								; Packet byte 3: Sunk ship position Y
 	; R14								; Packet byte 4: Sunk ship orientation
 	RCALL comm_slave_send_packet_loop
+	
+	RET
+
+comm_wait_int_flag_anim:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function waits until the I2C interrupt flag is set by the 
+	; hardware. It also runs the game maps animation function at each 
+	; iteration.
+	; NOTE: this function changes: R16
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	cwifa_loop:
+		; Run game maps animations
+		RCALL animate_game_maps
+		
+		; Exit loop if I2C interrupt flag is set
+		LDS R16, TWCR
+		SBRS R16, TWINT
+		RJMP cwifa_loop
 	
 	RET

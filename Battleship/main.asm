@@ -116,7 +116,7 @@ init:
 	RCALL game_init_enemy_ships_list
 
 	; Clear the screen
-	RCALL screen_clear
+	CALL screen_clear
 	
 	; This enables ALL previously configured interrupts
 	SEI					; Enable Global Interrupt Flag
@@ -124,7 +124,7 @@ init:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 init_intro:
 	; Clear the screen
-	RCALL screen_clear
+	CALL screen_clear
 
 	; Play game intro sound (long version)
 	buzzer_sound_async Sound_Intro_Long
@@ -165,12 +165,8 @@ init_ships_placement:
 		; Check if ship placement done, else continue the loop
 		;
 
-		; Place Y-pointer to the Ship Placement Status byte
-		LDI YH,high(SPS_ADDR)
-		LDI YL,low(SPS_ADDR)
-
 		; Get the Ship Placement Status byte
-		LD R16, Y
+		LDS R16, SPSTAT
 
 		; Exit the loop if SPS_DONE_BIT is set
 		SBRS R16, SPS_DONE_BIT
@@ -182,7 +178,7 @@ init_ships_placement:
 
 	; RCALL to comm_master_ship_placement_done if Player 1 selected, else RCALL comm_slave_ship_placement_done.
 	selected_player_rcall comm_master_ship_placement_done, comm_slave_ship_placement_done
-	
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 init_main_game:
 	; Set current game state to GS_MAIN_GAME
@@ -199,7 +195,7 @@ init_main_game:
 	CALL draw_boards
 
 	; Update the game maps & ship counter
-	RCALL update_game_maps
+	CALL update_game_maps
 
 	; Configure the interface for the game
 	RCALL game_init_interface

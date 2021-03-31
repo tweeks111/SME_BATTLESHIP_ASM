@@ -4,9 +4,9 @@
 ; This file is part of the Battleship project.
 ;
 ; It contains all the functions needed to send/receive packets
-; between two boards using I²C peripheral.
+; between two boards using I2C peripheral.
 ;
-; Authors: Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & ThÃ©o Lepoutte
 ;
 
 #define I2C_START			0x08	// Start condition has been received
@@ -298,7 +298,7 @@ i2c_wait_stop_cond:
 
 i2c_master_transmit_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function transmits a packet (5 bytes) in the I²C bus.
+	; This function transmits a packet (5 bytes) in the I2C bus.
 	; The 5 bytes to send are taken from 5 registers: R[10;14].
 	; The exit status is written in R15 (0x00 if succes, 0xFF if error). 
 	; NOTE: this function modifies: R16, R17
@@ -390,16 +390,11 @@ i2c_master_transmit_packet:
 	RET
 
 
-i2c_master_receive_packet:
+i2c_master_receive_init:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function reads a packet (5 bytes) from the I²C bus.
-	; The 5 bytes read are stored into 5 registers: R[10;14].
-	; The exit status is written in R15 (0x00 if succes, 0xFF if error).
+	; This function initializes the I2C master receive communication.
 	; NOTE: this function modifies: R16, R17
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	
-	; Reset the error LED
-	SBI PORTC,3
 
 	;
 	; INITIALIZE RECEPTIOIN
@@ -415,10 +410,28 @@ i2c_master_receive_packet:
 
 	; Send SLAVE ADDRESS in read mode (SLA+R)
 	i2c_master_send_SLA_R
+
+	RET
+
+
+i2c_master_receive_packet:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function reads a packet (5 bytes) from the I2C bus.
+	; The 5 bytes read are stored into 5 registers: R[10;14].
+	; The exit status is written in R15 (0x00 if succes, 0xFF if error).
+	; NOTE: this function modifies: R16, R17
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; Reset the error LED
+	SBI PORTC,3
+
+	; Send start condition then SLA+R
+	RCALL i2c_master_receive_init
 	
 	; Wait for TWINT Flag set. This indicates that the SLA+R has been transmitted, and ACK/NACK has been received.
 	RCALL i2c_wait_int_flag
 	
+i2c_master_receive_packet_no_sla:
 	; Check value of TWI Status Register. Mask prescaler bits. If status different from MR_SLA_ACK go to ERROR
 	i2c_check_status I2C_MR_SLA_ACK, i2c_mrp_error
 
@@ -495,7 +508,7 @@ i2c_master_receive_packet:
 
 i2c_slave_transmit_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function transmits a packet (5 bytes) on the I²C bus.
+	; This function transmits a packet (5 bytes) on the I2C bus.
 	; The 5 bytes to send are taken from 5 registers: R[10;14].
 	; The exit status is written in R15 (0x00 if succes, 0xFF if error).
 	; This function can also be accessed with _no_listening suffix if the
@@ -581,7 +594,7 @@ i2c_slave_transmit_packet_no_listening:
 
 i2c_slave_receive_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function receives a packet (5 bytes) from the I²C bus.
+	; This function receives a packet (5 bytes) from the I2C bus.
 	; The 5 bytes read are stored into 5 registers: R[10;14].
 	; The exit status is written in R15 (0x00 if succes, 0xFF if error).
 	; This function can also be accessed with _no_listening suffix if the

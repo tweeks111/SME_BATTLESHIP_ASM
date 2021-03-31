@@ -5,19 +5,20 @@
 ;
 ; It contains all the game management functions.
 ;
-; Authors: Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & ThÃ©o Lepoutte
 ;
 
 ; Turn Shooting Status byte address in SRAM
-#define SHOOTING_STATUS_ADDR	0x01C4
+#define TSSTAT				0x01C4
 
 ; Sunk Enemy Ships list address in SRAM
-#define SUNK_ENEMY_SHIPS_ADDR	0x02A0
+#define SUNK_ENEMY_SHIPS	0x02A0
 
 ; Player's Sunk Ships Counter address in SRAM
-#define SUNK_SHIPS_CNT_ADDR		0x01BA
+#define SKSCNT				0x01BA
+
 ; Enemy's Sunk Ships Counter address in SRAM
-#define SUNK_ENEMY_SHIPS_CNT_ADDR	0x02B5
+#define SKESCNT				0x02B5
 
 game_init_interface:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -37,8 +38,8 @@ game_init_interface:
 
 	; Initialize the Sunk Ships Counter to 0
 	CLR R16
-	STS SUNK_SHIPS_CNT_ADDR, R16
-	STS SUNK_ENEMY_SHIPS_CNT_ADDR, R16
+	STS SKSCNT, R16
+	STS SKESCNT, R16
 
 	RET
 
@@ -50,8 +51,8 @@ game_init_enemy_ships_list:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 	; Place Y-pointer to the sunk enemy ships list
-	LDI YH,high(SUNK_ENEMY_SHIPS_ADDR)
-	LDI YL,low(SUNK_ENEMY_SHIPS_ADDR)
+	LDI YH,high(SUNK_ENEMY_SHIPS)
+	LDI YL,low(SUNK_ENEMY_SHIPS)
 
 	; Fill the SRAM with 0x00
 	CLR R17
@@ -87,16 +88,13 @@ game_reset_cursor:
 	
 game_show_cursor:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function set the cursor as hidden.
+	; This function set the cursor length to 1 (unhide it).
 	; NOTE: this function changes: R16
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-	; Set Y-pointer to the cursor's length byte in SRAM
-	LDI YH,high(CURSOR_ADDR+2)
-	LDI YL,low(CURSOR_ADDR+2)
-
+	; Set cursor length to 1
 	LDI R16, 1
-	ST Y, R16
+	STS CURSHAPE_LEN, R16
 
 	RET
 
@@ -105,13 +103,10 @@ game_hide_cursor:
 	; This function set the cursor as hidden.
 	; NOTE: this function changes: R16
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-	; Set Y-pointer to the cursor's length byte in SRAM
-	LDI YH,high(CURSOR_ADDR+2)
-	LDI YL,low(CURSOR_ADDR+2)
-
+	
+	; Set cursor length to 0
 	CLR R16
-	ST Y, R16
+	STS CURSHAPE_LEN, R16
 
 	RET
 
@@ -129,14 +124,10 @@ game_fire:
 	; If the cell is not empty -> refuse firing
 	SBRC R10, 0
 	RJMP gf_firing_refused
-
-	; Place the Y-pointer to the Shooting Status byte address
-	LDI YH,high(SHOOTING_STATUS_ADDR)
-	LDI YL,low(SHOOTING_STATUS_ADDR)
-
+	
 	; Set Shooting Status to 1
 	LDI R16, 1
-	ST Y, R16
+	STS TSSTAT, R16
 	
 	; Play Fire Launch sound
 	buzzer_sound_async Sound_FireLaunch
@@ -205,10 +196,8 @@ game_play_turn:
 	RCALL update_game_maps
 
 	; Initialize the Turn Shooting Status to 0
-	LDI YH,high(SHOOTING_STATUS_ADDR)
-	LDI YL,low(SHOOTING_STATUS_ADDR)
 	CLR R16
-	ST Y, R16
+	STS TSSTAT, R16
 
 	; Keyboard actions loop
 	gpt_turn_loop:
@@ -218,12 +207,8 @@ game_play_turn:
 		; Run game maps animation routine
 		RCALL animate_game_maps
 		
-		; Place the Y-pointer to the Shooting Status byte address
-		LDI YH,high(SHOOTING_STATUS_ADDR)
-		LDI YL,low(SHOOTING_STATUS_ADDR)
-
 		; Get the current Shooting Status byte
-		LD R16, Y
+		LDS R16, TSSTAT
 
 		; Exit the loop if the Shooting Status is different from 0
 		CPI R16, 0
@@ -485,14 +470,11 @@ game_enemy_shot_sunk:
 
 	;----------------------------------------------------
 	; Finally, increment the player's sunk ships counter
-	; Place Y-pointer to the Sunk Ships Counter
-	LDI YH,high(SUNK_SHIPS_CNT_ADDR)
-	LDI YL,low(SUNK_SHIPS_CNT_ADDR)
 
 	; Get, increment and store the current sunk ships counter
-	LD R16, Y
+	LDS R16, SKSCNT
 	INC R16
-	ST Y, R16
+	STS SKSCNT, R16
 
 	; If all (5) ships have been sunk -> game lost
 	CPI R16, 5
@@ -628,13 +610,14 @@ game_add_enemy_sunk_ship:
 	; Note: this function changes: R16, R17
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
-	LDS R16, SUNK_ENEMY_SHIPS_CNT_ADDR
+	; Increment the Sunk Enemy Ships counter
+	LDS R16, SKESCNT
 	INC R16
-	STS SUNK_ENEMY_SHIPS_CNT_ADDR, R16
+	STS SKESCNT, R16
 
 	; Place Y-pointer to the sunk enemy ships list
-	LDI YH,high(SUNK_ENEMY_SHIPS_ADDR)
-	LDI YL,low(SUNK_ENEMY_SHIPS_ADDR)
+	LDI YH,high(SUNK_ENEMY_SHIPS)
+	LDI YL,low(SUNK_ENEMY_SHIPS)
 
 	; Loop over max 5 ships IDs to find a free list item
 	LDI R16, 5
@@ -664,7 +647,7 @@ game_add_enemy_sunk_ship:
 		ST Y+, R14		; Store Orientation
 
 		; Check if this sunk ship fills the sunk emeny ships list
-		CPI YL, low(SUNK_ENEMY_SHIPS_ADDR+20)
+		CPI YL, low(SUNK_ENEMY_SHIPS+20)
 		BREQ gaess_enemy_ships_list_full		; If the enemy ships list is now full -> game is won by the player
 
 		RET

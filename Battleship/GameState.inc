@@ -18,7 +18,7 @@
 #define GS_GAME_LOST		5
 
 ; Game state byte address in SRAM
-#define GAME_STATE_ADDR		0x0192
+#define GMSTAT		0x0192
 
 
 .macro game_change_state
@@ -27,18 +27,13 @@
 	; given in argument 0.
 	; NOTE: this macro changes: R16
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	LDI YH,high(GAME_STATE_ADDR)
-	LDI YL,low(GAME_STATE_ADDR)
-
 	LDI R16, (1 << @0)
-	ST Y, R16
+	STS GMSTAT, R16
 .endmacro
 
 .macro game_get_state
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This macro gets current Game State from SRAM and stores it in R10.
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	LDI YH,high(GAME_STATE_ADDR)
-	LDI YL,low(GAME_STATE_ADDR)
-	LD R10, Y
+	LDS R10, GMSTAT
 .endmacro

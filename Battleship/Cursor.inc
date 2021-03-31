@@ -8,11 +8,17 @@
 ; Authors : Mathieu Philippart & Théo Lepoutte
 ;
 
-; Cursor data address in SRAM
-#define CURSOR_ADDR			0x0196
+; Cursor shape bytes in SRAM
+#define CURSHAPE_X			0x0196	; Cursor X position
+#define CURSHAPE_Y			0x0197	; Cursor Y position
+#define CURSHAPE_LEN		0x0198	; Cursor Length
+#define CURSHAPE_ORT		0x0199	; Cursor Orientation
 
 ; Cursor area data address in SRAM
-#define CURSOR_AREA_ADDR	0x019A
+#define CURAREA_X			0x019A	; Area X position
+#define CURAREA_Y			0x019B	; Area Y position
+#define CURAREA_W			0x019C	; Area Width
+#define CURAREA_H			0x019D	; Area Height
 
 
 .macro get_cursor_position
@@ -20,12 +26,8 @@
 	; This macro returns the cursor's position in R11 and R12 (X, Y).
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
-	; Set Y-pointer to the cursor's data byte in SRAM
-	LDI YH,high(CURSOR_ADDR)
-	LDI YL,low(CURSOR_ADDR)
-
-	LD R11, Y+		; Position X
-	LD R12, Y		; Position Y
+	LDS R11, CURSHAPE_X		; Position X
+	LDS R12, CURSHAPE_Y		; Position Y
 .endmacro
 
 set_cursor_area:
@@ -36,15 +38,11 @@ set_cursor_area:
 	; R12: Area Width 
 	; R13: Area Height
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-	; Set Y-pointer to the cursor area data byte in SRAM
-	LDI YH,high(CURSOR_AREA_ADDR)
-	LDI YL,low(CURSOR_AREA_ADDR)
-
-	ST Y+, R10		; Area offset position X
-	ST Y+, R11		; Area offset position  Y
-	ST Y+, R12		; Area Width 
-	ST Y, R13		; Area Height
+	
+	STS CURAREA_X, R10		; Area offset position X
+	STS CURAREA_Y, R11		; Area offset position  Y
+	STS CURAREA_W, R12		; Area Width 
+	STS CURAREA_H, R13		; Area Height
 
 	RET
 
@@ -57,14 +55,10 @@ set_cursor_properties:
 	; R13: Cursor's Orientation (0 = Horizontal, 1 = Vertical)
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-	; Set Y-pointer to the cursor's data byte in SRAM
-	LDI YH,high(CURSOR_ADDR)
-	LDI YL,low(CURSOR_ADDR)
-	
-	ST Y+, R10		; Position X
-	ST Y+, R11		; Position Y
-	ST Y+, R12		; Length
-	ST Y, R13		; Orientation
+	STS CURSHAPE_X, R10		; Position X
+	STS CURSHAPE_Y, R11		; Position Y
+	STS CURSHAPE_LEN, R12	; Length
+	STS CURSHAPE_ORT, R13	; Orientation
 
 	RET
 
@@ -74,19 +68,15 @@ cursor_move_up:
 	; NOTE: this function uses: R16
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-	; Set Y-pointer to byte of cursor's Y position in SRAM
-	LDI YH,high(CURSOR_ADDR+1)
-	LDI YL,low(CURSOR_ADDR+1)
-	
 	; Get the cursor's Y position
-	LD R16, Y			; Cursor Y
+	LDS R16, CURSHAPE_Y		; Cursor Y
 
-	CPI R16, 0			; Don't move up if the cursor's position is already the maximum
+	CPI R16, 0				; Don't move up if the cursor's position is already the maximum
 	BREQ cmu_skip_move_up
 
 		; Decrement and store the cursor's Y position
 		DEC R16
-		ST Y, R16
+		STS CURSHAPE_Y, R16
 
 		; Update the game maps
 		RCALL update_game_maps
@@ -100,21 +90,13 @@ cursor_move_down:
 	; NOTE: this function uses: R16, R17, R18, R19
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-	; Set Y-pointer to byte of cursor's Y position in SRAM
-	LDI YH,high(CURSOR_ADDR+1)
-	LDI YL,low(CURSOR_ADDR+1)
-	
 	; Get the cursor's data
-	LD R16, Y+			; Cursor Y
-	LD R17, Y+			; Cursor Length
-	LD R18, Y			; Cursor Orientation (0 = horizontal, 1 = vertical)
+	LDS R16, CURSHAPE_Y		; Cursor Y
+	LDS R17, CURSHAPE_LEN	; Cursor Length
+	LDS R18, CURSHAPE_ORT	; Cursor Orientation (0 = horizontal, 1 = vertical)
 	
-	; Set Y-pointer to the cursor area HEIGHT byte in SRAM
-	LDI YH,high(CURSOR_AREA_ADDR+3)
-	LDI YL,low(CURSOR_AREA_ADDR+3)
-
 	; Get the cursor area height
-	LD R19, Y
+	LDS R19, CURAREA_H
 	DEC R19				; Decrement by 1 to use R19 with BRGE (greater or *equal*)
 
 	; Decrement the length before SUB (since the first pixel is at relative position 0)
@@ -128,11 +110,7 @@ cursor_move_down:
 
 		; Increment and store the cursor's Y position
 		INC R16
-
-		; Set Y-pointer to byte of cursor's Y position in SRAM
-		LDI YH,high(CURSOR_ADDR+1)
-		LDI YL,low(CURSOR_ADDR+1)
-		ST Y, R16
+		STS CURSHAPE_Y, R16
 
 		; Update the game maps
 		RCALL update_game_maps
@@ -145,20 +123,16 @@ cursor_move_left:
 	; This function moves the cursor left of one pixel if it is possible.
 	; NOTE: this function uses: R16, R17
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-	; Set Y-pointer to byte of cursor's X position in SRAM
-	LDI YH,high(CURSOR_ADDR)
-	LDI YL,low(CURSOR_ADDR)
-	
+		
 	; Get the cursor's data
-	LD R16, Y			; Cursor X
+	LDS R16, CURSHAPE_X		; Cursor X
 
-	CPI R16, 0			; Don't move if the cursor's position is already the maximum
+	CPI R16, 0				; Don't move if the cursor's position is already the maximum
 	BREQ cml_skip_move_left
 
 		; Decrement and store the cursor's X position
 		DEC R16
-		ST Y, R16
+		STS CURSHAPE_X, R16
 		
 		; Update the game maps
 		RCALL update_game_maps
@@ -171,23 +145,15 @@ cursor_move_right:
 	; This function moves the cursor right of one pixel if it is possible.
 	; NOTE: this function uses: R16, R17, R18, R19
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-	; Set Y-pointer to byte of cursor's X position in SRAM
-	LDI YH,high(CURSOR_ADDR)
-	LDI YL,low(CURSOR_ADDR)
-	
+		
 	; Get the cursor's data
-	LD R16, Y+			; Cursor X
-	LD R17, Y+			; Cursor Y (unused -> discarded at next instruction)
-	LD R17, Y+			; Cursor Length
-	LD R18, Y			; Cursor Orientation (0 = horizontal, 1 = vertical)
-	
-	; Set Y-pointer to the cursor area WIDTH byte in SRAM
-	LDI YH,high(CURSOR_AREA_ADDR+2)
-	LDI YL,low(CURSOR_AREA_ADDR+2)
-	
+	LDS R16, CURSHAPE_X		; Cursor X
+	LDS R17, CURSHAPE_Y		; Cursor Y (unused -> discarded at next instruction)
+	LDS R17, CURSHAPE_LEN	; Cursor Length
+	LDS R18, CURSHAPE_ORT	; Cursor Orientation (0 = horizontal, 1 = vertical)
+		
 	; Get the cursor area width
-	LD R19, Y
+	LDS R19, CURAREA_W
 	DEC R19				; Decrement by 1 to use R19 with BRGE (greater or *equal*)
 
 	; Decrement the length before SUB (since the first pixel is at relative position 0)
@@ -201,11 +167,7 @@ cursor_move_right:
 
 		; Increment and store the cursor's X position
 		INC R16
-
-		; Set Y-pointer to byte of cursor's X position in SRAM
-		LDI YH,high(CURSOR_ADDR)
-		LDI YL,low(CURSOR_ADDR)
-		ST Y, R16
+		STS CURSHAPE_X, R16
 		
 		; Update the game maps
 		RCALL update_game_maps
@@ -220,22 +182,14 @@ cursor_rotate:
 	; NOTE: this function uses: R16, R17, R18, R19, R20
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-	; Set Y-pointer cursor's data byte in SRAM
-	LDI YH,high(CURSOR_ADDR)
-	LDI YL,low(CURSOR_ADDR)
-	
 	; Get the cursor's data
-	LD R16, Y+			; Cursor X
-	LD R17, Y+			; Cursor Y
-	LD R18, Y+			; Cursor Length
-	LD R19, Y			; Cursor Orientation (0 = horizontal, 1 = vertical)
+	LDS R16, CURSHAPE_X		; Cursor X
+	LDS R17, CURSHAPE_Y		; Cursor Y
+	LDS R18, CURSHAPE_LEN	; Cursor Length
+	LDS R19, CURSHAPE_ORT	; Cursor Orientation (0 = horizontal, 1 = vertical)
 		
-	; Set Y-pointer to the cursor area WIDTH byte in SRAM
-	LDI YH,high(CURSOR_AREA_ADDR+2)
-	LDI YL,low(CURSOR_AREA_ADDR+2)
-	
 	; Get the cursor area width
-	LD R20, Y+
+	LDS R20, CURAREA_W
 
 	; Compute the maximum X position of cursor after rotation
 	SBRC R19, 0			; Skip next if ship was horizontal before rotate
@@ -248,7 +202,7 @@ cursor_rotate:
 
 	cr_skip_x_fix:
 	; Get the cursor area height
-	LD R20, Y+
+	LDS R20, CURAREA_H
 
 	; Compute the maximum Y position of cursor after rotation
 	SBRS R19, 0			; Skip next if ship was vertical before rotate
@@ -264,15 +218,10 @@ cursor_rotate:
 	COM R19					; Reverse all bits of R19
 	ANDI R19, (1 << 0)		; Keep only the bit 0
 	
-	; Set Y-pointer cursor's data byte in SRAM
-	LDI YH,high(CURSOR_ADDR)
-	LDI YL,low(CURSOR_ADDR)
-
 	; Store the new cursor's data
-	ST Y+, R16			; Cursor X
-	ST Y+, R17			; Cursor Y
-	INC YL				; Cursor Length (not changed)
-	ST Y, R19			; Cursor Orientation (0 = horizontal, 1 = vertical)
+	STS CURSHAPE_X, R16		; Cursor X
+	STS CURSHAPE_Y, R17		; Cursor Y
+	STS CURSHAPE_ORT, R19	; Cursor Orientation (0 = horizontal, 1 = vertical)
 		
 	; Update the game maps
 	RCALL update_game_maps
@@ -286,24 +235,18 @@ screen_set_cursor:
 	; If the cursor's length is 0, the cursor is not drawn
 	; Note : this function changes: R16, R17, R18, R19, R20, R21
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	LDI YH, high(CURSOR_ADDR)
-	LDI YL, low(CURSOR_ADDR)
-	
-	LD R10, Y+			; Cursor X
-	LD R11, Y+			; Cursor Y
-	LD R16, Y+			; Cursor Length
-	LD R17, Y			; Cursor Orientation (0 = horizontal, 1 = vertical)
+
+	LDS R10, CURSHAPE_X		; Cursor X
+	LDS R11, CURSHAPE_Y		; Cursor Y
+	LDS R16, CURSHAPE_LEN	; Cursor Length
+	LDS R17, CURSHAPE_ORT	; Cursor Orientation (0 = horizontal, 1 = vertical)
 	
 	; Don't draw the cursor if its length is 0
 	CPI R16, 0
 	BREQ ssc_no_cur
 	
-	; Set Y-pointer to the cursor area data byte in SRAM
-	LDI YH,high(CURSOR_AREA_ADDR)
-	LDI YL,low(CURSOR_AREA_ADDR)
-
-	LD R18, Y+			; Cursor area offset position X
-	LD R19, Y+			; Cursor area offset position Y
+	LDS R18, CURAREA_X	; Cursor area offset position X
+	LDS R19, CURAREA_Y	; Cursor area offset position Y
 
 	; Add the area start position to the cursor's position
 	ADD R10, R18		; Add X offset

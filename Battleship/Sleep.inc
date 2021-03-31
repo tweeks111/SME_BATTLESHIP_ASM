@@ -5,7 +5,7 @@
 ;
 ; It contains all the functions needed to generate a sleep (C-like) function.
 ;
-; Authors: Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & ThÃ©o Lepoutte
 ;
 
 .macro sleep_ts

@@ -167,7 +167,7 @@ game_notify_ship_counter:
 
 	; Show the number of player's ships left
 	LDI R16, 5
-	LDS R17, SUNK_SHIPS_CNT_ADDR
+	LDS R17, SKSCNT
 	SUB R16, R17
 	MOV R13, R16	
 	CALL screen_set_char
@@ -176,7 +176,7 @@ game_notify_ship_counter:
 	LDI R16, 22		; X
 	MOV R10, R16	
 	LDI R16, 5
-	LDS R17, SUNK_ENEMY_SHIPS_CNT_ADDR
+	LDS R17, SKESCNT
 	SUB R16, R17
 	MOV R13, R16	
 	CALL screen_set_char

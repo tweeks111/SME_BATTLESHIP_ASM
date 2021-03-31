@@ -8,7 +8,8 @@
 ; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
-#define PLAYER_SELECT_ADDR	0x0194
+; Player Select byte address in SRAM
+#define PLYSEL		0x0194
 
 .macro player_set_selected
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -16,20 +17,15 @@
 	; argument 0.
 	; NOTE: this macro changes: R16
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	LDI YH,high(PLAYER_SELECT_ADDR)
-	LDI YL,low(PLAYER_SELECT_ADDR)
-
 	LDI R16, @0
-	ST Y, R16
+	STS PLYSEL, R16
 .endmacro
 
 .macro player_get_selected
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This macro gets selected player from SRAM and stores it in R10.
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	LDI YH,high(PLAYER_SELECT_ADDR)
-	LDI YL,low(PLAYER_SELECT_ADDR)
-	LD R10, Y
+	LDS R10, PLYSEL
 .endmacro
 
 .macro selected_player_rcall
@@ -39,18 +35,14 @@
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
 	; Get the currently selected player
-	LDI YH,high(PLAYER_SELECT_ADDR)
-	LDI YL,low(PLAYER_SELECT_ADDR)
-	LD R10, Y
+	LDS R10, PLYSEL
 
 	; If Player 1, RCALL the argument 0
 	SBRS R10, 0
 	RCALL @0
 
 	; Get the currently selected player (again, since R10 an Y may change)
-	LDI YH,high(PLAYER_SELECT_ADDR)
-	LDI YL,low(PLAYER_SELECT_ADDR)
-	LD R10, Y
+	LDS R10, PLYSEL
 
 	; If Player 2, RCALL the argument 1
 	SBRC R10, 0
@@ -61,11 +53,9 @@
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This macro RCALLs the argument 0 if Player 1 is selected
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	LDI YH,high(PLAYER_SELECT_ADDR)
-	LDI YL,low(PLAYER_SELECT_ADDR)
-	
+
 	; Get the currently selected player
-	LD R10, Y
+	LDS R10, PLYSEL
 
 	; If Player 1, RCALL the argument 0
 	SBRS R10, 0
@@ -76,11 +66,9 @@
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This macro RCALLs the argument 0 if Player 2 is selected
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	LDI YH,high(PLAYER_SELECT_ADDR)
-	LDI YL,low(PLAYER_SELECT_ADDR)
-	
+
 	; Get the currently selected player
-	LD R10, Y
+	LDS R10, PLYSEL
 
 	; If Player 2, RCALL the argument 0
 	SBRC R10, 0
@@ -170,12 +158,8 @@ player_select_validate:
 	; NOTE: this macro modifies: R16
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
-	; Place Y-pointer on PLAYER_SELECT_ADDR
-	LDI YH,high(PLAYER_SELECT_ADDR)
-	LDI YL,low(PLAYER_SELECT_ADDR)
-
-	LD R16, Y		; Get current player selection
-	SBR R16,(1<<7)	; Set the Bit7
-	ST Y, R16		; Store the new byte in SRAM
+	LDS R16, PLYSEL		; Get current player selection
+	SBR R16,(1<<7)		; Set the Bit7
+	STS PLYSEL, R16		; Store the new byte in SRAM
 
 	RET

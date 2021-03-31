@@ -9,13 +9,13 @@
 ;
 
 ; Ship Placement Status
-#define SPS_ADDR			0x019E
-#define SPS_CARRIER			0
-#define SPS_BATTLESHIP		1
-#define SPS_CRUISER			2
-#define SPS_SUBMARINE		3
-#define SPS_DESTROYER		4
-#define SPS_DONE_BIT		5
+#define SPSTAT			0x019E
+#define SPS_CARRIER		0
+#define SPS_BATTLESHIP	1
+#define SPS_CRUISER		2
+#define SPS_SUBMARINE	3
+#define SPS_DESTROYER	4
+#define SPS_DONE_BIT	5
 
 ; Placed ships list
 #define PLAYER_SHIPS_ADDR	0x01A0
@@ -46,12 +46,8 @@ init_ships_list:
 		DEC R16
 		BRNE isl_list_loop
 
-	; Place Y-pointer to the Ship Placement Status byte
-	LDI YH,high(SPS_ADDR)
-	LDI YL,low(SPS_ADDR)
-
-	; Write 0x00 into SPS
-	ST Y, R17
+	; Write 0x00 into SPSTAT
+	STS SPSTAT, R17
 
 	RET
 
@@ -62,15 +58,11 @@ start_ship_placement:
 	; NOTE: this function changes: R16
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
-	; Place Y-pointer to the Ship Placement Status byte
-	LDI YH,high(SPS_ADDR)
-	LDI YL,low(SPS_ADDR)
-
 	; The first ship is represented by Bit0
 	LDI R16, (1 << 0)
 
-	; Store the ship ID into STS byte
-	ST Y, R16
+	; Store the ship ID into SPSTAT byte
+	STS SPSTAT, R16
 
 	;
 	; Prepare the cursor for the first ship
@@ -109,12 +101,8 @@ place_next_ship:
 	; NOTE: this function changes: R16
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
-	; Place Y-pointer to the Ship Placement Status byte
-	LDI YH,high(SPS_ADDR)
-	LDI YL,low(SPS_ADDR)
-
 	; Get the Ship Placement Status byte
-	LD R16, Y
+	LDS R16, SPSTAT
 
 	; Nothing to do if ship placement is already done
 	SBRC R16, SPS_DONE_BIT
@@ -123,7 +111,7 @@ place_next_ship:
 	; Shift the Ship Identifier bit to the left. It will represent the next ship 
 	; to place, or set the Placement Finished bit if the last ship has been placed.
 	LSL R16
-	ST Y, R16		; Store the modified STS into SRAM
+	STS SPSTAT, R16		; Store the modified STS into SRAM
 	
 	;
 	; Prepare the cursor for the next ship
@@ -159,23 +147,15 @@ place_ship:
 	; Skip next jump if there is no overlap
 	SBRC R10, 0
 	RJMP ps_placement_refused
-
-	; Place Y-pointer to the cursor's data
-	LDI YH,high(CURSOR_ADDR)
-	LDI YL,low(CURSOR_ADDR)
-
-	; Get cursor's data from SRAM
-	LD R10, Y+				; Cursor X
-	LD R11, Y+				; Cursor Y
-	LD R12, Y+				; Cursor Length
-	LD R13, Y				; Cursor Orientation
 	
-	; Place Y-pointer to the SPS byte in SRAM (Ship Placement Status)
-	LDI YH,high(SPS_ADDR)
-	LDI YL,low(SPS_ADDR)
-
+	; Get cursor's data from SRAM
+	LDS R10, CURSHAPE_X		; Cursor X
+	LDS R11, CURSHAPE_Y		; Cursor Y
+	LDS R12, CURSHAPE_LEN	; Cursor Length
+	LDS R13, CURSHAPE_ORT	; Cursor Orientation
+	
 	; Get the SPS byte
-	LD R14, Y
+	LDS R14, SPSTAT
 
 	; Mask 5 last bits of SPS
 	LDI R16, 0b00011111
@@ -270,14 +250,11 @@ check_ship_overlap:
 	; NOTE: this function changes: R16, R17
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
-	LDI YH,high(CURSOR_ADDR)
-	LDI YL,low(CURSOR_ADDR)
-
 	; Get cursor's data from SRAM
-	LD R10, Y+				; Cursor X
-	LD R11, Y+				; Cursor Y
-	LD R12, Y+				; Cursor Length
-	LD R16,	Y				; Cursor Orientation
+	LDS R10, CURSHAPE_X		; Cursor X
+	LDS R11, CURSHAPE_Y		; Cursor Y
+	LDS R12, CURSHAPE_LEN	; Cursor Length
+	LDS R16, CURSHAPE_ORT	; Cursor Orientation
 	
 	; Compute the fist byte index in PCS
 	LDI R17, 10				; 10 cells per row

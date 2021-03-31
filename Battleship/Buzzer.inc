@@ -9,7 +9,9 @@
 ; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
-#define SOUND_COUNTER_ADDR 0x01C0
+#define SNDCNT_D	0x01C0
+#define SNDCNT_ZH	0x01C1
+#define SNDCNT_ZL	0x01C2
 
 
 /*
@@ -49,19 +51,15 @@
 */
 
 .macro buzzer_sound_async
-	; Place the Y-pointer to address SOUND_COUNTER_ADDR (Sound conters address in SRAM)
-	LDI YH,high(SOUND_COUNTER_ADDR)
-	LDI YL,low(SOUND_COUNTER_ADDR)
-
 	; Set Duration counter to 1 (= get the next tone)
 	LDI R16, 1
-	ST Y+,R16
+	STS SNDCNT_D,R16
 	
 	; Write the sound table address in SRAM
 	LDI R16, high(@0 << 1)
-	ST Y+,R16
+	STS SNDCNT_ZH,R16
 	LDI R16, low(@0 << 1)
-	ST Y,R16
+	STS SNDCNT_ZL,R16
 .endmacro
 
 
@@ -88,13 +86,10 @@ buzzer_init:
 	STS TCCR2B,R16			; Set prescaler to 64 (f_tmr = 16e6/64 = 250000 Hz)
 
 	; INITIAL SRAM DATA ;
-	; Place the Y-pointer to address SOUND_COUNTER_ADDR (Sound conters address in SRAM)
-	LDI YH,high(SOUND_COUNTER_ADDR)
-	LDI YL,low(SOUND_COUNTER_ADDR)
-	
+
 	; Set Duration counter to 0 (= no sound to play)
 	CLR R16
-	ST Y,R16
+	STS SNDCNT_D, R16
 
 	RET
 	
@@ -135,16 +130,8 @@ Timer2OverflowInterrupt:
 SoundsInterruptRoutine:
 	; This routine runs at 10 Hz
 	
-	; Store the X-pointer on the stack (because it is used by the screen)
-	PUSH XH
-	PUSH XL
-
-	; Place the X-pointer to address SOUND_COUNTER_ADDR (Sound conters address in SRAM)
-	LDI XH,high(SOUND_COUNTER_ADDR)
-	LDI XL,low(SOUND_COUNTER_ADDR)
-	
 	; Get the Duration counter value
-	LD R25,X
+	LDS R25, SNDCNT_D
 
 	; Check and skip if there is no sound to play
 	CPI R25,0
@@ -159,10 +146,9 @@ SoundsInterruptRoutine:
 	PUSH ZL
 	
 	; Get the Z-pointer position from the SRAM (current sound reading position)
-	LD R25,X+					; Dummy read to increment X
-	LD R25,X+
+	LDS R25, SNDCNT_ZH
 	MOV ZH,R25
-	LD R25,X
+	LDS R25, SNDCNT_ZL
 	MOV ZL,R25
 
 	; Get the next tone and copy the frequency value in R8 (Timer2 counter)
@@ -170,17 +156,13 @@ SoundsInterruptRoutine:
 	MOV R8, R25
 	STS TCNT2,R25				; Apply to Timer2
 	
-	; Place the X-pointer to the start of the sound counter address
-	LDI XH,high(SOUND_COUNTER_ADDR)
-	LDI XL,low(SOUND_COUNTER_ADDR)
-
 	; Get duration of next tone
 	LPM R25,Z+
 	
 	; Save the sound status in SRAM
-	ST X+,R25
-	ST X+,ZH
-	ST X+,ZL
+	STS SNDCNT_D, R25
+	STS SNDCNT_ZH, ZH
+	STS SNDCNT_ZL, ZL
 
 	; Restore the Z-pointer from the stack
 	POP ZL
@@ -204,7 +186,7 @@ SoundsInterruptRoutine:
 	sir_dec_duration:
 	; Decrement the duration
 	DEC R25
-	ST X, R25
+	STS SNDCNT_D, R25
 
 	RJMP sir_end_routine
 
@@ -217,10 +199,6 @@ SoundsInterruptRoutine:
 	CBI PORTB,1
 
 	sir_end_routine:
-	; Restore the X-pointer from the stack
-	POP XL
-	POP XH
-
 	RET
 
 /*
