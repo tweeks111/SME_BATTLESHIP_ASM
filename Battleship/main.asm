@@ -198,7 +198,7 @@ init_main_game:
 	CALL screen_clear
 	CALL draw_boards
 
-	; Update the game maps
+	; Update the game maps & ship counter
 	RCALL update_game_maps
 
 	; Configure the interface for the game

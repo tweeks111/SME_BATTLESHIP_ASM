@@ -18,7 +18,8 @@ game_redraw:
 	; Draw the boards
 	RCALL screen_clear
 	RCALL draw_boards
-
+	; Draw the number of ships left
+	RCALL game_notify_ship_counter
 	; Draw the game maps content
 	RCALL update_game_maps
 	
@@ -151,3 +152,36 @@ game_notify_wait_player2:
 	draw_word 5, 8, 3, WordPlayer2
 	
 	RET
+
+game_notify_ship_counter:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This show the ships left for every player on the screen.
+	; Note: this function changes: R16, R17, R18, R19, R20, R21
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	LDI R16, 15		; X
+	MOV R10, R16	
+	LDI R16, 8		; Y
+	MOV R11, R16	
+	LDI R16, 3		; Brightness
+	MOV R12, R16	
+
+	; Show the number of player's ships left
+	LDI R16, 5
+	LDS R17, SUNK_SHIPS_CNT_ADDR
+	SUB R16, R17
+	MOV R13, R16	
+	CALL screen_set_char
+
+	; Show the number of enemy's ships left
+	LDI R16, 22		; X
+	MOV R10, R16	
+	LDI R16, 5
+	LDS R17, SUNK_ENEMY_SHIPS_CNT_ADDR
+	SUB R16, R17
+	MOV R13, R16	
+	CALL screen_set_char
+
+	; Draw a separation line between the numbers
+	draw_line 19, 10, 3, 2
+
+	RET 

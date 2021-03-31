@@ -16,7 +16,8 @@
 
 ; Player's Sunk Ships Counter address in SRAM
 #define SUNK_SHIPS_CNT_ADDR		0x01BA
-
+; Enemy's Sunk Ships Counter address in SRAM
+#define SUNK_ENEMY_SHIPS_CNT_ADDR	0x02B5
 
 game_init_interface:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -33,14 +34,11 @@ game_init_interface:
 	MOV R12, R16
 	MOV R13, R16
 	RCALL set_cursor_area
-	
-	; Place Y-pointer to the Sunk Ships Counter
-	LDI YH,high(SUNK_SHIPS_CNT_ADDR)
-	LDI YL,low(SUNK_SHIPS_CNT_ADDR)
 
 	; Initialize the Sunk Ships Counter to 0
 	CLR R16
-	ST Y, R16
+	STS SUNK_SHIPS_CNT_ADDR, R16
+	STS SUNK_ENEMY_SHIPS_CNT_ADDR, R16
 
 	RET
 
@@ -630,6 +628,10 @@ game_add_enemy_sunk_ship:
 	; Note: this function changes: R16, R17
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
+	LDS R16, SUNK_ENEMY_SHIPS_CNT_ADDR
+	INC R16
+	STS SUNK_ENEMY_SHIPS_CNT_ADDR, R16
+
 	; Place Y-pointer to the sunk enemy ships list
 	LDI YH,high(SUNK_ENEMY_SHIPS_ADDR)
 	LDI YL,low(SUNK_ENEMY_SHIPS_ADDR)
