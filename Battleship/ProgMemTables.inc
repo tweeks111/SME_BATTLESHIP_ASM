@@ -234,8 +234,8 @@ WordPlayer2:
 WordBattleship:
 	.db _B, _A, _T, _T, _L, _E, _S, _H, _I, _P, _WORD_END, 0		; Add a zero padding to keep even number of bytes (16-bit alignment)
 	
-WordWaitingFor:
-	.db _W, _A, _T, _I, _N, _G, _SMALL_SPACE, _F, _O, _R, _WORD_END, 0
+WordWaiting:
+	.db _W, _A, _I, _T, _I, _N, _G, _WORD_END
 
 WordMissed:
 	.db _M, _I, _S, _S, _E, _D, _WORD_END, 0

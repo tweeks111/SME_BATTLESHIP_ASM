@@ -125,9 +125,7 @@ player_select_menu:
 	; Process discovery in master mode if Player 1
 	psm_p1_master:
 		; Draw a text "Waiting for Player 2"
-		RCALL screen_clear
-		draw_word 1, 1, 3, WordWaitingFor
-		draw_word 5, 8, 3, WordPlayer2
+		RCALL game_notify_wait_player2
 
 		RCALL comm_master_discovery
 		RET
@@ -135,9 +133,7 @@ player_select_menu:
 	; Process discovery in slave mode if Player 2
 	psm_p2_slave:
 		; Draw a text "Waiting for Player 1"
-		RCALL screen_clear
-		draw_word 1, 1, 3, WordWaitingFor
-		draw_word 5, 8, 3, WordPlayer1
+		RCALL game_notify_wait_player1
 
 		RCALL comm_slave_discovery
 		RET

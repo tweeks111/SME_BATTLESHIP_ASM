@@ -145,8 +145,8 @@ init_ships_placement:
 	buzzer_sound_async Sound_PlayersConnected
 
 	; Draw the boards
-	RCALL screen_clear
-	RCALL draw_boards
+	CALL screen_clear
+	CALL draw_boards
 
 	; If player 2 is selected (SLAVE), call comm_slave_exchange_prepare to start listening I2C
 	player_2_rcall comm_slave_exchange_prepare
@@ -175,7 +175,11 @@ init_ships_placement:
 		; Exit the loop if SPS_DONE_BIT is set
 		SBRS R16, SPS_DONE_BIT
 		RJMP isp_ship_placement_loop
-		
+
+	
+	; Draw a text "Waiting for Player X"
+	selected_player_rcall game_notify_wait_player2, game_notify_wait_player1
+
 	; RCALL to comm_master_ship_placement_done if Player 1 selected, else RCALL comm_slave_ship_placement_done.
 	selected_player_rcall comm_master_ship_placement_done, comm_slave_ship_placement_done
 	
@@ -189,6 +193,10 @@ init_main_game:
 
 	; Play game intro sound (short version)
 	buzzer_sound_async Sound_Intro
+	
+	; Draw the boards
+	CALL screen_clear
+	CALL draw_boards
 
 	; Update the game maps
 	RCALL update_game_maps

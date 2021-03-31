@@ -125,3 +125,29 @@ game_notify_shot_sunk:
 	; Don't redraw the game screen since this notify is followed by another notify
 
 	RET
+
+game_notify_wait_player1:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This show "Waiting for Player 1" on the screen.
+	; Note: this function changes: R16, R17, R18, R19, R20, R21
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; Draw a text "Waiting for Player 1"
+	RCALL screen_clear
+	draw_word 6, 1, 3, WordWaiting
+	draw_word 5, 8, 3, WordPlayer1
+	
+	RET
+
+game_notify_wait_player2:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This show "Waiting for Player 2" on the screen.
+	; Note: this function changes: R16, R17, R18, R19, R20, R21
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; Draw a text "Waiting for Player 2"
+	RCALL screen_clear
+	draw_word 6, 1, 3, WordWaiting
+	draw_word 5, 8, 3, WordPlayer2
+	
+	RET
