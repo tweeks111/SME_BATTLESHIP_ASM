@@ -87,14 +87,10 @@ buzzer_init:
 	LDI R16, (1<<CS22)|(1<<CS21)
 	STS TCCR2B,R16			; Set prescaler to 64 (f_tmr = 16e6/64 = 250000 Hz)
 
-	; INITIAL SRAM DATA ;
-	; Place the Y-pointer to address SOUND_COUNTER_ADDR (Sound conters address in SRAM)
-	LDI YH,high(SOUND_COUNTER_ADDR)
-	LDI YL,low(SOUND_COUNTER_ADDR)
-	
-	; Set Duration counter to 0 (= no sound to play)
+	; INITIAL SRAM DATA ;	
+	; Set Duration counter to 0 (= no sound to play) in SOUND_COUNTER_ADDR (Sound counters address in SRAM)
 	CLR R16
-	ST Y,R16
+	STS SOUND_COUNTER_ADDR,R16
 
 	RET
 	

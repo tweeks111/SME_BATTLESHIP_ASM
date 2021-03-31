@@ -215,7 +215,7 @@ init_main_game:
 		; If player 2 is selected (SLAVE), call comm_slave_exchange_prepare to start listening I2C
 		player_2_rcall comm_slave_exchange_prepare
 
-		; Show a notify ("Go" for player 1, "Enemy shot" for player 2)
+		; Show a notify ("Your Turn" for player 1, "Enemy Turn" for player 2)
 		selected_player_rcall game_notify_your_turn, game_notify_enemy_turn
 
 		; If selected player is Player 1 (MASTER), call game_play_turn.

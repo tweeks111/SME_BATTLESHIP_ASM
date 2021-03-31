@@ -174,7 +174,7 @@ game_check_cell:
 	LDI YL, low(ECS_ADDR)
 
 	; Add the byte index to the Y-pointer
-	Add YL, R0
+	ADD YL, R0
 
 	; Get the cell state from ECS
 	LD R16, Y
@@ -205,10 +205,8 @@ game_play_turn:
 	RCALL update_game_maps
 
 	; Initialize the Turn Shooting Status to 0
-	LDI YH,high(SHOOTING_STATUS_ADDR)
-	LDI YL,low(SHOOTING_STATUS_ADDR)
 	CLR R16
-	ST Y, R16
+	STS SHOOTING_STATUS_ADDR, R16
 
 	; Keyboard actions loop
 	gpt_turn_loop:
@@ -217,13 +215,9 @@ game_play_turn:
 
 		; Run game maps animation routine
 		RCALL animate_game_maps
-		
-		; Place the Y-pointer to the Shooting Status byte address
-		LDI YH,high(SHOOTING_STATUS_ADDR)
-		LDI YL,low(SHOOTING_STATUS_ADDR)
 
 		; Get the current Shooting Status byte
-		LD R16, Y
+		LDS R16, SHOOTING_STATUS_ADDR
 
 		; Exit the loop if the Shooting Status is different from 0
 		CPI R16, 0

@@ -39,18 +39,14 @@
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
 	; Get the currently selected player
-	LDI YH,high(PLAYER_SELECT_ADDR)
-	LDI YL,low(PLAYER_SELECT_ADDR)
-	LD R10, Y
+	LDS R10, PLAYER_SELECT_ADDR
 
 	; If Player 1, RCALL the argument 0
 	SBRS R10, 0
 	RCALL @0
 
 	; Get the currently selected player (again, since R10 an Y may change)
-	LDI YH,high(PLAYER_SELECT_ADDR)
-	LDI YL,low(PLAYER_SELECT_ADDR)
-	LD R10, Y
+	LDS R10, PLAYER_SELECT_ADDR
 
 	; If Player 2, RCALL the argument 1
 	SBRC R10, 0
@@ -61,11 +57,9 @@
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This macro RCALLs the argument 0 if Player 1 is selected
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	LDI YH,high(PLAYER_SELECT_ADDR)
-	LDI YL,low(PLAYER_SELECT_ADDR)
-	
+
 	; Get the currently selected player
-	LD R10, Y
+	LDS R10, PLAYER_SELECT_ADDR
 
 	; If Player 1, RCALL the argument 0
 	SBRS R10, 0
@@ -76,11 +70,9 @@
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This macro RCALLs the argument 0 if Player 2 is selected
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	LDI YH,high(PLAYER_SELECT_ADDR)
-	LDI YL,low(PLAYER_SELECT_ADDR)
-	
+
 	; Get the currently selected player
-	LD R10, Y
+	LDS R10, PLAYER_SELECT_ADDR
 
 	; If Player 2, RCALL the argument 0
 	SBRC R10, 0
