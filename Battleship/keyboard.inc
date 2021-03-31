@@ -300,9 +300,19 @@ KeyBPressed:
 	RJMP KeyboardPressedEnd
 
 KeyCPressed:
-	; Reset the game if C is pressed
-	JMP init
-	;RJMP KeyboardPressedEnd
+	game_get_state					; Get the current game state (stored in R10)
+	MOV R24, R10					; Copy R10 into R24 (R24 SHOULD NOT BE MODIFIED IN ACTION FUNCTIONS!)
+
+	SBRC R24, GS_SHIPS_PLACEMENT	; Skip next if game state is not GS_SHIPS_PLACEMENT
+		JMP init					; Reset the game if C is pressed
+
+	SBRC R24, GS_GAME_LOST			; Skip next if game state is not GS_GAME_LOST
+		JMP init					; Reset the game if C is pressed
+
+	SBRC R24, GS_GAME_WON			; Skip next if game state is not GS_GAME_WON
+		JMP init					; Reset the game if C is pressed
+
+	RJMP KeyboardPressedEnd
 
 KeyDPressed:
 	RJMP KeyboardPressedEnd
