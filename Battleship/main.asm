@@ -208,7 +208,7 @@ init_main_game:
 		player_2_rcall comm_slave_exchange_prepare
 
 		; Show a notify ("Go" for player 1, "Enemy shot" for player 2)
-		selected_player_rcall game_notify_go, game_notify_enemy_shot
+		selected_player_rcall game_notify_your_turn, game_notify_enemy_turn
 
 		; If selected player is Player 1 (MASTER), call game_play_turn.
 		player_1_rcall game_play_turn
@@ -231,7 +231,7 @@ init_main_game:
 		player_2_rcall comm_slave_exchange_prepare
 
 		; Show a notify ("Go" for player 2, "Enemy shot" for player 1)
-		selected_player_rcall game_notify_enemy_shot, game_notify_go
+		selected_player_rcall game_notify_enemy_turn, game_notify_your_turn
 		
 		; If selected player is Player 2 (SLAVE), call game_play_turn.
 		player_2_rcall game_play_turn

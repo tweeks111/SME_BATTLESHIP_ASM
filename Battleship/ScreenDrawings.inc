@@ -26,6 +26,19 @@
 	draw_word 2, 4, 3, WordEnemyShot
 .endmacro
 
+.macro draw_enemy_turn
+	draw_line 0, 2, 3, 40
+	draw_line 0, 10, 3, 40
+	draw_word 2, 4, 3, WordEnemyTurn
+.endmacro
+
+.macro draw_your_turn
+	draw_line 0, 2, 3, 40
+	draw_line 0, 10, 3, 40
+	draw_word 4, 4, 3, WordYourTurn
+.endmacro
+
+
 .macro draw_missed
 	draw_rect 6, 2, @0, 1 , 9
 	draw_rect 32, 2, @0, 1 , 9

@@ -251,7 +251,13 @@ WordGo:
 	
 WordEnemyShot:
 	.db _E, _N, _E, _M, _Y, _SMALL_SPACE, _S, _H, _O, _T, _WORD_END, 0
-	
+
+WordEnemyTurn:
+	.db _E, _N, _E, _M, _Y, _SMALL_SPACE, _T, _U, _R, _N, _WORD_END, 0
+
+WordYourTurn:
+	.db _Y, _O, _U, _R, _SMALL_SPACE, _T, _U, _R, _N, _WORD_END
+
 WordYouWon:
 	.db _Y, _O, _U, _SPACE, _W, _O, _N, _EXC, _WORD_END, 0
 
