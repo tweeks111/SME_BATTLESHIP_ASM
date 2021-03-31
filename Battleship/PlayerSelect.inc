@@ -5,7 +5,7 @@
 ;
 ; It contains the functions to select the player at the beginning of the game
 ;
-; Authors: Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Thï¿½o Lepoutte
 ;
 
 ; Player Select byte address in SRAM

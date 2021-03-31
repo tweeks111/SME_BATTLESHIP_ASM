@@ -165,7 +165,7 @@ game_check_cell:
 	LDI YL, low(ECS_ADDR)
 
 	; Add the byte index to the Y-pointer
-	Add YL, R0
+	ADD YL, R0
 
 	; Get the cell state from ECS
 	LD R16, Y

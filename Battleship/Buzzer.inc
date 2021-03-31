@@ -6,7 +6,7 @@
 ; It contains all the functions needed to play tones and 
 ; sounds, and the sounds tables.
 ;
-; Authors: Mathieu Philippart & Théo Lepoutte
+; Authors: Mathieu Philippart & Thï¿½o Lepoutte
 ;
 
 #define SNDCNT_D	0x01C0
