@@ -15,6 +15,10 @@
 // FUNCTIONS
 
 keyboard_init:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function initializes the keyboard
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 	; Initialize the keyboard pressed state to 0
 	CLR R16
 	STS KBDSTAT, R16
@@ -22,7 +26,11 @@ keyboard_init:
 	RET
 
 keyboard_listen:
-	; 2-step method
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function check is a button is pressed on the keyboard using 
+	; the 2-step method, and execute the appropriate action.
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 	step1:
 		; Configure rows as output pins
 		CBI PORTD,4			; Set PD4 to LOW state

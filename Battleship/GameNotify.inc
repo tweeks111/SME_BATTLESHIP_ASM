@@ -134,7 +134,7 @@ game_notify_wait_player1:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
 	; Draw a text "Waiting for Player 1"
-	RCALL screen_clear
+	CALL screen_clear
 	draw_word 6, 1, 3, WordWaiting
 	draw_word 5, 8, 3, WordPlayer1
 	
@@ -147,7 +147,7 @@ game_notify_wait_player2:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
 	; Draw a text "Waiting for Player 2"
-	RCALL screen_clear
+	CALL screen_clear
 	draw_word 6, 1, 3, WordWaiting
 	draw_word 5, 8, 3, WordPlayer2
 	

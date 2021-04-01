@@ -5,7 +5,7 @@
 ;
 ; It contains the functions to select the player at the beginning of the game
 ;
-; Authors: Mathieu Philippart & Th�o Lepoutte
+; Authors: Mathieu Philippart & Théo Lepoutte
 ;
 
 ; Player Select byte address in SRAM
@@ -96,6 +96,9 @@ player_select_menu:
 	; Loop over the keyboard until the player is selected
 	psm_keyboard_loop:
 		RCALL keyboard_listen
+
+		; Listen to joystick
+		RCALL joystick_listen
 
 		player_get_selected			; Get current player selection (stored in R10)
 		SBRS R10,7					; If Bit7 is set -> selection validated -> exit the keyboard loop

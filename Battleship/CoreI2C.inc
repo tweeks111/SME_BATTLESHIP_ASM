@@ -428,10 +428,10 @@ i2c_master_receive_packet:
 	; Send start condition then SLA+R
 	RCALL i2c_master_receive_init
 	
+i2c_master_receive_packet_no_sla:
 	; Wait for TWINT Flag set. This indicates that the SLA+R has been transmitted, and ACK/NACK has been received.
 	RCALL i2c_wait_int_flag
-	
-i2c_master_receive_packet_no_sla:
+
 	; Check value of TWI Status Register. Mask prescaler bits. If status different from MR_SLA_ACK go to ERROR
 	i2c_check_status I2C_MR_SLA_ACK, i2c_mrp_error
 

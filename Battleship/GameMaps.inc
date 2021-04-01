@@ -15,13 +15,13 @@
 ; PCS cells states (bitwise states)
 #define PCS_EMPTY			0
 #define PCS_HEALTY_SHIP		1
-#define PCS_HITTED_SHIP		2
+#define PCS_HIT_SHIP		2
 #define PCS_SUNK_SHIP		3
 
 ; ECS cells states (bitwise states)
 #define ECS_EMPTY			0
 #define ECS_MISSED_SHOT		1
-#define ECS_HITTED_SHIP		2
+#define ECS_HIT_SHIP		2
 #define ECS_SUNK_SHIP		3
 
 init_map_cells:
@@ -131,8 +131,8 @@ screen_set_PCS_map:
 			SBRC R16, PCS_HEALTY_SHIP
 			RJMP ssps_draw_healty_ship_point		; If this cell is a healty part of a ship
 
-			SBRC R16, PCS_HITTED_SHIP
-			RJMP ssps_draw_hitted_ship_point		; If this cell is a hitted part of a ship
+			SBRC R16, PCS_HIT_SHIP
+			RJMP ssps_draw_hit_ship_point			; If this cell is a hit part of a ship
 
 			SBRC R16, PCS_SUNK_SHIP
 			RJMP ssps_draw_sunk_ship_point			; If this cell is part of a sunk ship
@@ -171,8 +171,8 @@ screen_set_PCS_map:
 
 		RJMP ssps_X_loop_end
 		
-	ssps_draw_hitted_ship_point:
-		; Hitted parts of ships are blinking at 2.5 Hz
+	ssps_draw_hit_ship_point:
+		; Hit parts of ships are blinking at 2.5 Hz
 		; We use the animation counter to determine if we are in ON or OFF state
 		LDI R16, 3						; Blink from max to min brightness
 		SBRC R9, 2						; Skip next instruction if Bit2 of animation counter cleared (to divide frequency by 4)
@@ -239,8 +239,8 @@ screen_set_ECS_map:
 			SBRC R16, ECS_MISSED_SHOT
 			RJMP sses_draw_missed_shot_point		; If this cell is a healty part of a ship
 
-			SBRC R16, ECS_HITTED_SHIP
-			RJMP sses_draw_hitted_ship_point		; If this cell is a hitted part of a ship
+			SBRC R16, ECS_HIT_SHIP
+			RJMP sses_draw_hit_ship_point			; If this cell is a hit part of a ship
 
 			SBRC R16, ECS_SUNK_SHIP
 			RJMP sses_draw_sunk_ship_point			; If this cell is part of a sunk ship
@@ -272,8 +272,8 @@ screen_set_ECS_map:
 
 		RJMP sses_X_loop_end
 		
-	sses_draw_hitted_ship_point:
-		; Hitted parts of ships are blinking at 2.5 Hz
+	sses_draw_hit_ship_point:
+		; Hit parts of ships are blinking at 2.5 Hz
 		; We use the animation counter to determine if we are in ON or OFF state
 		LDI R16, 3						; Blink from max to min brightness
 		SBRC R9, 2						; Skip next instruction if Bit2 of animation counter cleared (to divide frequency by 4)

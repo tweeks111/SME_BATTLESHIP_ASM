@@ -204,6 +204,9 @@ game_play_turn:
 		; Listen to keyboard
 		RCALL keyboard_listen
 
+		; Listen to joystick
+		RCALL joystick_listen
+
 		; Run game maps animation routine
 		RCALL animate_game_maps
 		
@@ -238,7 +241,7 @@ game_enemy_fired_position:
 	MOV R15, R12			; Shot position Y
 	MOV R14, R11			; Shot position X
 
-	; NOTE: To check which ship has been hitted/sunk, we must loop over the
+	; NOTE: To check which ship has been hit/sunk, we must loop over the
 	;		player's Placed Ships list (we cannot simply check the PCS map).
 
 	; Place Y-pointer to the placed ships list
@@ -274,13 +277,13 @@ game_enemy_fired_position:
 			; Loop over the ship size
 			gces_horiz_loop:
 				CP R16, R14					; Compare shot and ship X position
-				BREQ gces_shot_hits_ship	; If X (and Y) are the same -> shot hitted a ship
+				BREQ gces_shot_hits_ship	; If X (and Y) are the same -> shot hit a ship
 			
 				INC R16						; Increment the X position
 				DEC R17						; Decrement the ship size
 				BRNE gces_horiz_loop
 			
-			; Check next ship if this one is not hitted by this shot
+			; Check next ship if this one is not hit by this shot
 			RJMP gces_ships_loop_end
 		
 		gces_ship_vert:
@@ -296,14 +299,14 @@ game_enemy_fired_position:
 			; Loop over the ship size
 			gces_vert_loop:
 				CP R16, R15					; Compare shot and ship Y position
-				BREQ gces_shot_hits_ship	; If Y (and X) are the same -> shot hitted a ship
+				BREQ gces_shot_hits_ship	; If Y (and X) are the same -> shot hit a ship
 			
 				INC R16						; Increment the Y position
 				DEC R17						; Decrement the ship size
 				BRNE gces_vert_loop
 	
 	
-		; Check next ship if this one is not hitted by this shot
+		; Check next ship if this one is not hit by this shot
 		gces_ships_loop_end:
 			; Place the Y-pointer on the next placed ship ID's address
 			INC YL
@@ -312,7 +315,7 @@ game_enemy_fired_position:
 			DEC R18
 			BRNE gces_ships_loop
 
-	; If we fall here, this means that no ship has been hitted by the shot.
+	; If we fall here, this means that no ship has been hit by the shot.
 	; The original shot position is in R14, R15 (X, Y).
 	gces_shot_missed:
 		; Prepare argument registers
@@ -324,8 +327,8 @@ game_enemy_fired_position:
 
 		RET
 
-	; If we fall here, this means that a ship has been hitted by the shot.
-	; The hitted ship properties are in R10, R12, R13, R19, R11 (ID, X, Y, Orientation, Size) and Y-pointer is at the #Hits address of this ship.
+	; If we fall here, this means that a ship has been hit by the shot.
+	; The hit ship properties are in R10, R12, R13, R19, R11 (ID, X, Y, Orientation, Size) and Y-pointer is at the #Hits address of this ship.
 	; The original shot position is in R14, R15 (X, Y).
 	gces_shot_hits_ship:
 		; Get the Ship Hits counter
@@ -348,12 +351,12 @@ game_enemy_fired_position:
 		MOV R12, R15					; Original shot position Y
 
 		; Execute corresponding action
-		RCALL game_enemy_shot_hitted
+		RCALL game_enemy_shot_hit
 
 		RET
 		
-	; If we fall here, this means that a ship has been hitted and sunk by the shot.
-	; The hitted ship properties are in R10, R12, R13, R19, R11 (ID, X, Y, Orientation, Size).
+	; If we fall here, this means that a ship has been hit and sunk by the shot.
+	; The hit ship properties are in R10, R12, R13, R19, R11 (ID, X, Y, Orientation, Size).
 	; The original shot position is in R14, R15 (X, Y).
 	gces_shot_sunk_ship:
 		; Prepare argument registers
@@ -391,14 +394,14 @@ game_enemy_shot_missed:
 	RET
 
 
-game_enemy_shot_hitted:
+game_enemy_shot_hit:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function is called when the enemy shot hitted a ship.
+	; This function is called when the enemy shot hit a ship.
 	; The shot position is given via R11 and R12 (X, Y).
 	; Note: this function changes: R16, R17
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		
-	; When the enemy hitted a ship, send an answer to enemy then change the cell state in PCS to hitted
+	; When the enemy hit a ship, send an answer to enemy then change the cell state in PCS to hit
 
 	; Send the Shot Hit answer to the enemy
 	; Call master send for Player 1, slave send for Player 2
@@ -410,8 +413,8 @@ game_enemy_shot_hitted:
 	LDI R16, 1					; Store 1 in R16
 	MOV R12, R16				; Rectangle width = 1
 	MOV R13, R16				; Rectangle height = 1
-	LDI R16, (1 << PCS_HITTED_SHIP)
-	MOV R14, R16				; Cell state = HITTED_SHIP
+	LDI R16, (1 << PCS_HIT_SHIP)
+	MOV R14, R16				; Cell state = HIT_SHIP
 	RCALL set_rect_pcs
 	
 	; Play Shot Enemy Hit sound	
@@ -435,13 +438,13 @@ game_enemy_shot_sunk:
 	; When the enemy has sunk a ship, send an answer to enemy then change the cells state in PCS to sunk
 	;
 	
-	; Move the ship size to R10 (since R15 will be overwritten by comm_master_send_shot_sank_packet or comm_slave_send_shot_sank_packet
+	; Move the ship size to R10 (since R15 will be overwritten by comm_master_send_shot_sunk_packet or comm_slave_send_shot_sunk_packet
 	MOV R20, R15
 
 	;----------------------------------------------------
-	; Send the Shot Sank answer to the enemy
+	; Send the Shot Sunk answer to the enemy
 	; Call master send for Player 1, slave send for Player 2
-	selected_player_rcall comm_master_send_shot_sank_packet, comm_slave_send_shot_sank_packet
+	selected_player_rcall comm_master_send_shot_sunk_packet, comm_slave_send_shot_sunk_packet
 
 	;----------------------------------------------------
 	; Set the new cells state in PCS (for the whole ship)
@@ -522,10 +525,10 @@ game_shot_result_splash:
 	RET
 
 	
-game_shot_result_hitted:
+game_shot_result_hit:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function is called when the player's shot consequence on the
-	; enemy is Ship Hitted (shot hits a ship).
+	; enemy is Ship Hit (shot hits a ship).
 	; The shot position is given via R11, R12 (X, Y).
 	; Note: this function changes: R16, R17
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -538,8 +541,8 @@ game_shot_result_hitted:
 	LDI R16, 1					; Store 1 in R16
 	MOV R12, R16				; Rectangle width = 1
 	MOV R13, R16				; Rectangle height = 1
-	LDI R16, (1 << ECS_HITTED_SHIP)
-	MOV R14, R16				; Cell state = HITTED_SHIP
+	LDI R16, (1 << ECS_HIT_SHIP)
+	MOV R14, R16				; Cell state = HIT_SHIP
 	RCALL set_rect_ecs
 	
 	; Play Shot Hit sound
@@ -554,7 +557,7 @@ game_shot_result_hitted:
 game_shot_result_sunk:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function is called when the player's shot consequence on the
-	; enemy is Ship Sunk (shot sank a ship).
+	; enemy is Ship Sunk (shot has sunk a ship).
 	; The sunk ship properties are given via R11, R12, R13, R14, (ID, X, 
 	; Y, Orientation).
 	; Note: this function changes: R16, R17

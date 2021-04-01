@@ -16,7 +16,7 @@
 #define MASTER_SHOT_LAUNCH_ID	0x10
 #define MASTER_SHOT_SPLASH_ID	0x12
 #define MASTER_SHOT_HIT_ID		0x14
-#define MASTER_SHOT_SANK_ID		0x16
+#define MASTER_SHOT_SUNK_ID		0x16
 #define MASTER_GAME_WON_ID		0xA0
 
 #define SLAVE_DISCOVERY_ID		0x02
@@ -24,7 +24,7 @@
 #define SLAVE_SHOT_LAUNCH_ID	0x11
 #define SLAVE_SHOT_SPLASH_ID	0x13
 #define SLAVE_SHOT_HIT_ID		0x15
-#define SLAVE_SHOT_SANK_ID		0x17
+#define SLAVE_SHOT_SUNK_ID		0x17
 
 
 
@@ -323,9 +323,9 @@ comm_master_send_shooting_launch_packet:
 	CP R10, R16
 	BREQ cmsslp_shot_hit_received
 
-	LDI R16, SLAVE_SHOT_SANK_ID
+	LDI R16, SLAVE_SHOT_SUNK_ID
 	CP R10, R16
-	BREQ cmsslp_shot_sank_received
+	BREQ cmsslp_shot_sunk_received
 	
 	; If the received packet is not one of the three possibilities -> unexpected
 	RJMP comm_unexpected_packet_id
@@ -335,10 +335,10 @@ comm_master_send_shooting_launch_packet:
 		RET
 
 	cmsslp_shot_hit_received:
-		RCALL game_shot_result_hitted
+		RCALL game_shot_result_hit
 		RET
 
-	cmsslp_shot_sank_received:
+	cmsslp_shot_sunk_received:
 		RCALL game_shot_result_sunk
 		RET
 
@@ -429,9 +429,9 @@ comm_slave_send_shooting_launch_packet:
 	CP R10, R16
 	BREQ cmsslp_shot_hit_received
 
-	LDI R16, MASTER_SHOT_SANK_ID
+	LDI R16, MASTER_SHOT_SUNK_ID
 	CP R10, R16
-	BREQ cmsslp_shot_sank_received
+	BREQ cmsslp_shot_sunk_received
 
 	; If the received packet is not one of the three possibilities -> unexpected
 	RJMP comm_unexpected_packet_id
@@ -441,10 +441,10 @@ comm_slave_send_shooting_launch_packet:
 		RET
 
 	cssslp_shot_hit_received:
-		RCALL game_shot_result_hitted
+		RCALL game_shot_result_hit
 		RET
 
-	cssslp_shot_sank_received:
+	cssslp_shot_sunk_received:
 		RCALL game_shot_result_sunk
 		RET
 
@@ -569,17 +569,17 @@ comm_slave_send_shot_hit_packet:
 	RET
 
 	
-comm_master_send_shot_sank_packet:
+comm_master_send_shot_sunk_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function sends a Shot Sank packet with the properties of the 
+	; This function sends a Shot Sunk packet with the properties of the 
 	; sunk ship from the master to the slave (answer to the slave shot).
 	; The ship properties are given via R11, R12, R13, R14 (ID, X, Y, 
 	; Orientation).
 	; NOTE: this function uses: R16, R17
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
-	; Send the Shot Sank packet
-	LDI R16, MASTER_SHOT_SANK_ID		; Packet ID
+	; Send the Shot Sunk packet
+	LDI R16, MASTER_SHOT_SUNK_ID		; Packet ID
 	MOV R10, R16
 	; R11								; Packet byte 1: Sunk ship ID
 	; R12								; Packet byte 2: Sunk ship position X
@@ -590,9 +590,9 @@ comm_master_send_shot_sank_packet:
 	RET
 	
 	
-comm_slave_send_shot_sank_packet:
+comm_slave_send_shot_sunk_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; This function sends a Shot Sank packet with the properties of the 
+	; This function sends a Shot Sunk packet with the properties of the 
 	; sunk ship from the slave to the master (answer to the master shot).
 	; The ship properties are given via R11, R12, R13, R14 (ID, X, Y, 
 	; Orientation).
@@ -600,7 +600,7 @@ comm_slave_send_shot_sank_packet:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
 	; Send the Shot Splash packet
-	LDI R16, SLAVE_SHOT_SANK_ID			; Packet ID
+	LDI R16, SLAVE_SHOT_SUNK_ID			; Packet ID
 	MOV R10, R16
 	; R11								; Packet byte 1: Sunk ship ID
 	; R12								; Packet byte 2: Sunk ship position X

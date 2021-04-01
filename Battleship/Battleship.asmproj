@@ -107,6 +107,9 @@
     <Compile Include="GameState.inc">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Joystick.inc">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Keyboard.inc">
       <SubType>Code</SubType>
     </Compile>

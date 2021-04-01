@@ -94,6 +94,7 @@ JMP Timer0OverflowInterrupt
 .INCLUDE "Placement.inc"
 .INCLUDE "Game.inc"
 .INCLUDE "Keyboard.inc"
+.INCLUDE "Joystick.inc"
 .INCLUDE "Animations.inc"
 .INCLUDE "GameNotify.inc"
 
@@ -104,16 +105,14 @@ init:
 	CALL timer1_mux_init
 	CALL buzzer_init
 	CALL i2c_init
+	CALL joystick_init
 	CALL anim_init
 
 	; Initialize game maps SRAM content
-	RCALL init_map_cells
-
-	; Initialize player's ships list
-	RCALL init_ships_list
+	CALL init_map_cells
 
 	; Initialize the sunk enemy ships list
-	RCALL game_init_enemy_ships_list
+	CALL game_init_enemy_ships_list
 
 	; Clear the screen
 	CALL screen_clear
@@ -140,6 +139,9 @@ init_intro:
 init_ships_placement:
 	; Set current game state to SHIPS_PLACEMENT
 	game_change_state GS_SHIPS_PLACEMENT
+
+	; Initialize player's ships list
+	RCALL init_ships_list
 	
 	; Play a game sound when both players are connected
 	buzzer_sound_async Sound_PlayersConnected
@@ -160,6 +162,9 @@ init_ships_placement:
 	isp_ship_placement_loop:
 		; Listen to keyboard
 		RCALL keyboard_listen
+
+		; Listen to joystick
+		RCALL joystick_listen
 
 		;
 		; Check if ship placement done, else continue the loop
@@ -286,5 +291,8 @@ game_lost:
 main:
 	; Listen to keyboard (if user wants to start a new game, press C)
 	RCALL keyboard_listen
+
+	; Listen to joystick
+	RCALL joystick_listen
 
 	RJMP main
