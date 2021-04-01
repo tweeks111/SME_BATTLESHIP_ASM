@@ -115,7 +115,7 @@ game_notify_shot_sunk:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
 	; Clear the screen
-	RCALL screen_clear
+	CALL screen_clear
 
 	; Draw the banner
 	draw_sunk 3

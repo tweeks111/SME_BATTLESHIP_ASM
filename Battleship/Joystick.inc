@@ -15,12 +15,17 @@
 #define JSKSTAT_V		0		; Vertical Tilt State
 #define JSKSTAT_H		1		; Horizontal Tilt State
 #define JSKSTAT_PV		2		; Previous Tilt State
+#define JSKSTAT_FR		3		; Fast Repeat State
 
 ; Joystick analog value thresholds (0-255)
-#define JSTK_UP_THLD		75
-#define JSTK_DOWN_THLD		180
-#define JSTK_LEFT_THLD		75
-#define JSTK_RIGHT_THLD		180
+#define JSTK_UP_THLD			80			; Threshold for slow repeating
+#define JSTK_UP_FST_THLD		40			; Threshold for fast repeating
+#define JSTK_DOWN_THLD			170
+#define JSTK_DOWN_FST_THLD		210
+#define JSTK_LEFT_THLD			80
+#define JSTK_LEFT_FST_THLD		40
+#define JSTK_RIGHT_THLD			170
+#define JSTK_RIGHT_FST_THLD		210
 
 joystick_init:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -100,7 +105,7 @@ joystick_listen:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function checks if the joystick button is pressed and checks
 	; if the joystick is tilted in a direction.
-	; Note: this function changes: R16
+	; Note: this function changes: R0, R1, R16, R17, R18
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 	; First, check if the joystick is pressed
@@ -127,17 +132,31 @@ joystick_listen:
 		MOV R16, R11
 
 		; Compare the returned value to thresholds
+		CPI R16, JSTK_DOWN_FST_THLD
+		BRSH jnp_Y_down_fast
 		CPI R16, JSTK_DOWN_THLD
 		BRSH jnp_Y_down
+		CPI R16, JSTK_UP_FST_THLD
+		BRLO jnp_Y_up_fast
 		CPI R16, JSTK_UP_THLD
 		BRLO jnp_Y_up
 			RJMP jnp_Y_no_tilt
 
+		jnp_Y_up_fast:
+			; Set the Fast Repeat bit in JSKSTAT
+			LDS R16, JSKSTAT
+			SBR R16, (1 << JSKSTAT_FR)
+			STS JSKSTAT, R16
 		jnp_Y_up:
 			; Joystick Up
 			RCALL JoystickUp
 			RJMP jnp_Y_tilt
 
+		jnp_Y_down_fast:
+			; Set the Fast Repeat bit in JSKSTAT
+			LDS R16, JSKSTAT
+			SBR R16, (1 << JSKSTAT_FR)
+			STS JSKSTAT, R16
 		jnp_Y_down:
 			; Joystick Down
 			RCALL JoystickDown
@@ -177,17 +196,31 @@ joystick_listen:
 		MOV R16, R11
 		
 		; Compare the returned value to thresholds
+		CPI R16, JSTK_RIGHT_FST_THLD
+		BRSH jnp_X_right_fast
 		CPI R16, JSTK_RIGHT_THLD
 		BRSH jnp_X_right
+		CPI R16, JSTK_LEFT_FST_THLD
+		BRLO jnp_X_left_fast
 		CPI R16, JSTK_LEFT_THLD
 		BRLO jnp_X_left
 			RJMP jnp_X_no_tilt
 
+		jnp_X_left_fast:
+			; Set the Fast Repeat bit in JSKSTAT
+			LDS R16, JSKSTAT
+			SBR R16, (1 << JSKSTAT_FR)
+			STS JSKSTAT, R16			
 		jnp_X_left:
 			; Joystick Left
 			RCALL JoystickLeft
 			RJMP jnp_X_tilt
 
+		jnp_X_right_fast:
+			; Set the Fast Repeat bit in JSKSTAT
+			LDS R16, JSKSTAT
+			SBR R16, (1 << JSKSTAT_FR)
+			STS JSKSTAT, R16			
 		jnp_X_right:
 			; Joystick Right
 			RCALL JoystickRight
@@ -233,6 +266,7 @@ joystick_listen:
 			sleep_ts 3
 
 			; Set the Joystick Previous Tilt State bit in JSKSTAT
+			LDS R16, JSKSTAT
 			SBR R16, (1 << JSKSTAT_PV)
 			STS JSKSTAT, R16
 
@@ -242,8 +276,21 @@ joystick_listen:
 		jte_previous_tilted:
 		; If the joystick was tilted previously
 			
-			; Sleep shot (repeated action mode)
+			; Check if fast repeat bit is set
+			SBRC R16, JSKSTAT_FR
+				RJMP jte_fast_repeat		; Skip the next delay if fast repeat
+
+			; Sleep short (added to the next one if not fast repeat)
 			sleep_ts 1
+
+			jte_fast_repeat:
+			; Sleep short (repeated action mode)
+			sleep_ts 1
+
+			; Clear the Joystick Fast Repeat bit in JSKSTAT
+			LDS R16, JSKSTAT
+			CBR R16, (1 << JSKSTAT_FR)
+			STS JSKSTAT, R16
 
 		jte_end:
 		
