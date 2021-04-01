@@ -33,6 +33,68 @@ joystick_init:
 	
 	RET
 
+joystick_adc_avg:
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function get the analog value from ADX, where X is the number 
+	; of the analog pin, given via R10. The function makes an average on
+	; the value over 8 captures. The average value is returned in R11.
+	; Note: this function changes: R0, R1, R16, R17, R18
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; Prepare ADC to get analog value from ADX
+	LDI R16, (1 << REFS0)|(1 << ADLAR)
+	OR R16, R10			; OR with R10 to select the analog pin number
+	STS ADMUX, R16
+	
+	; Start ADC conversion
+	LDI R16, (1 << ADEN)|(1 << ADSC)|(1 << ADPS1)
+	STS ADCSRA, R16
+
+	; Prepare averaging registers
+	CLR R0				; Averaging register LOW
+	CLR R1				; Averaging register HIGH
+
+	; Register to contains 0
+	CLR R17
+
+	; Prepare average loop counter
+	LDI R18, 8
+	jaa_avg_loop:
+		; Wait for conversion finished
+		jaa_wait_loop:
+			LDS R16, ADCSRA
+			SBRS R16, ADIF
+			RJMP jaa_wait_loop
+		
+		; Reset ADC Interrupt flag and start a new ADC conversion
+		LDI R16, (1 << ADEN)|(1 << ADSC)|(1 << ADIF)|(1 << ADPS1)
+		STS ADCSRA, R16
+		
+		; Add the current ADC value to R0 and R1 (16-bit addition)
+		LDS R16, ADCH
+		ADD R0, R16				; Add to LOW byte
+		ADC R1, R17				; Report previous addition carry on HIGH byte
+
+		; Decrement average loop counter
+		DEC R18
+		BRNE jaa_avg_loop
+		
+	; Reset ADC Interrupt flag and stop ADC conversion
+	LDI R16, (1 << ADIF)|(1 << ADPS1)
+	STS ADCSRA, R16
+	
+	; Once the loop is finished, divide by 8 (16-bit shifts)
+	LSR R1			; Divide 16-bit bloc by 2
+	ROR R0
+	LSR R1			; Divide 16-bit bloc by 2
+	ROR R0
+	LSR R1			; Divide 16-bit bloc by 2
+	ROR R0
+	
+	; Store the result in R11
+	MOV R11, R0
+
+	RET
 
 joystick_listen:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -53,29 +115,18 @@ joystick_listen:
 		; If the Joystick was not pressed, check if it is tilted in a direction
 		
 		;
-		; Check vertical tilt (AN1)
+		; Check vertical tilt (AD1)
 		;
 
-		; Prepare ADC to get analog value from AN1
-		LDI R16, (1 << REFS0)|(1 << ADLAR)|(1 << MUX0)
-		STS ADMUX, R16
-	
-		; Start ADC conversion
-		LDI R16, (1 << ADEN)|(1 << ADSC)|(1 << ADPS1)
-		STS ADCSRA, R16
+		; Get averaged analog value from AD1
+		LDI R16, 1
+		MOV R10, R16
+		RCALL joystick_adc_avg
+		
+		; Move the returned value into R16
+		MOV R16, R11
 
-		; Wait for conversion finished
-		jnp_Y_loop:
-			LDS R16, ADCSRA
-			SBRS R16, ADIF
-			RJMP jnp_Y_loop
-		
-		; Reset ADC Interrupt flag and stop ADC conversion
-		LDI R16, (1 << ADIF)|(1 << ADPS1)
-		STS ADCSRA, R16
-		
-		; Get the upper bits (ADCH) converted and compare to thresholds
-		LDS R16, ADCH
+		; Compare the returned value to thresholds
 		CPI R16, JSTK_DOWN_THLD
 		BRSH jnp_Y_down
 		CPI R16, JSTK_UP_THLD
@@ -114,29 +165,18 @@ joystick_listen:
 		jnp_Y_end:
 	
 		;
-		; Check horizontal tilt (AN0)
+		; Check horizontal tilt (AD0)
 		;
 		
-		; Prepare ADC to get analog value from AN0
-		LDI R16, (1 << REFS0)|(1 << ADLAR)
-		STS ADMUX, R16
-
-		; Start ADC conversion
-		LDI R16, (1 << ADEN)|(1 << ADSC)|(1 << ADPS1)
-		STS ADCSRA, R16
-	
-		; Wait for conversion finished
-		jnp_X_loop:
-			LDS R16, ADCSRA
-			SBRS R16, ADIF
-			RJMP jnp_X_loop
-
-		; Reset ADC Interrupt flag and stop ADC conversion
-		LDI R16, (1 << ADIF)|(1 << ADPS1)
-		STS ADCSRA, R16
+		; Get averaged analog value from AD0
+		LDI R16, 0
+		MOV R10, R16
+		RCALL joystick_adc_avg
 		
-		; Get the upper bits (ADCH) converted and compare to thresholds
-		LDS R16, ADCH
+		; Move the returned value into R16
+		MOV R16, R11
+		
+		; Compare the returned value to thresholds
 		CPI R16, JSTK_RIGHT_THLD
 		BRSH jnp_X_right
 		CPI R16, JSTK_LEFT_THLD
