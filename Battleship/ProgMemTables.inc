@@ -119,15 +119,15 @@ Sound_ShotSunk:
 	
 Sound_ShotEnemyMissed:
 	; Shot Enemy Missed sound
-	.db _SOL_3, 1, _SI_3, 3, 0, 0
+	.db _SHUSH, 8, _SOL_3, 1, _SI_3, 3, 0, 0
 
 Sound_ShotEnemyHit:
 	; Shot Enemy Hit sound
-	.db _SOL_3, 2, _SHUSH, 2, _SOL_3, 2, _DO_3, 4, 0, 0
+	.db _SHUSH, 8, _SOL_3, 2, _SHUSH, 2, _SOL_3, 2, _DO_3, 4, 0, 0
 
 Sound_ShotEnemySunk:
 	; Shot Enemy Sunk sound
-	.db _SOL_2, 2, _SHUSH, 2, _SOL_2, 2, _DO_3, 4, _SHUSH, 2, _DO_2, 4, 0, 0
+	.db _SHUSH, 8, _SOL_2, 2, _SHUSH, 2, _SOL_2, 2, _DO_3, 4, _SHUSH, 2, _DO_2, 4, 0, 0
 
 Sound_PlayersConnected:
 	; Shot Players Connected sound

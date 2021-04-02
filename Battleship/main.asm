@@ -260,10 +260,7 @@ init_main_game:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 game_won:
-	sleep_ts 10
-
-	; Play winner sound
-	buzzer_sound_async Sound_Winner
+	sleep_ts 20
 	
 	; Clear the screen
 	CALL screen_clear
@@ -271,20 +268,25 @@ game_won:
 	; Draw winner screen
 	draw_winner 3
 
+	; Play winner sound
+	buzzer_sound_async Sound_Winner
+
 	RJMP main
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 game_lost:
-	sleep_ts 10
-
-	; Play looser sound
-	buzzer_sound_async Sound_Looser
+	sleep_ts 20
 	
 	; Clear the screen
 	CALL screen_clear
 
 	; Draw looser screen
 	draw_looser 3
+
+	sleep_ts 18
+
+	; Play looser sound
+	buzzer_sound_async Sound_Looser
 
 	RJMP main
 
